@@ -1,21 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Seed Deck (content-pipeline output)",
-  "description": "Contract between content-pipeline/ingest-oxford.ts and the app's first-run seed step. One file per deck under src/content/seed/.",
+  "title": "Deck Semente (saída do content-pipeline)",
+  "description": "Contrato entre content-pipeline/ingest-oxford.ts e a etapa de semeadura da primeira execução do app. Um arquivo por deck em src/content/seed/.",
   "type": "object",
   "required": ["deckId", "name", "sourceLevel", "source", "extractedAt", "cards"],
   "properties": {
-    "deckId": { "type": "string", "description": "Stable id, e.g. 'oxford-3000-a1-a2'" },
-    "name": { "type": "string", "description": "Human-readable deck name" },
+    "deckId": { "type": "string", "description": "Id estável, ex.: 'oxford-3000-a1-a2'" },
+    "name": { "type": "string", "description": "Nome do deck legível por humanos" },
     "sourceLevel": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1"] },
     "source": {
       "type": "string",
-      "description": "Traceable source identifier recorded in content-pipeline/SOURCES.md (Constitution Principle IV)"
+      "description": "Identificador de fonte rastreável, registrado em content-pipeline/SOURCES.md (Princípio IV da Constituição)"
     },
     "extractedAt": {
       "type": "string",
       "format": "date",
-      "description": "ISO date the pipeline generated this file"
+      "description": "Data ISO em que o pipeline gerou este arquivo"
     },
     "cards": {
       "type": "array",
@@ -24,9 +24,9 @@
         "type": "object",
         "required": ["front", "back", "sourceRef"],
         "properties": {
-          "front": { "type": "string", "minLength": 1, "description": "The word" },
-          "back": { "type": "string", "minLength": 1, "description": "Definition/example/translation" },
-          "sourceRef": { "type": "string", "description": "Pointer back to the exact source entry, for traceability" }
+          "front": { "type": "string", "minLength": 1, "description": "A palavra" },
+          "back": { "type": "string", "minLength": 1, "description": "Definição/exemplo/tradução" },
+          "sourceRef": { "type": "string", "description": "Ponteiro de volta para a entrada exata da fonte, para rastreabilidade" }
         }
       }
     }

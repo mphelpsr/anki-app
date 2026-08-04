@@ -1,214 +1,242 @@
-# Feature Specification: Flashcard Study Loop (MVP)
+# Especificação da Funcionalidade: Loop de Estudo com Flashcards (MVP)
 
-**Feature Branch**: `001-flashcard-study-loop`
+**Branch da Feature**: `001-flashcard-study-loop`
 
-**Created**: 2026-08-04
+**Criada em**: 2026-08-04
 
-**Status**: Draft
+**Status**: Rascunho
 
-**Input**: User description: "MVP study loop: browse a deck seeded from Oxford 3000/5000 word lists, study due flashcards, grade recall, and have the card rescheduled via spaced repetition"
+**Entrada**: Descrição do usuário: "MVP study loop: browse a deck seeded from Oxford 3000/5000 word lists, study due flashcards, grade recall, and have the card rescheduled via spaced repetition"
 
-## User Scenarios & Testing *(mandatory)*
+## Cenários e Testes do Usuário *(obrigatório)*
 
-### User Story 1 - Study due cards in a session (Priority: P1)
+### História de Usuário 1 - Estudar cards devidos em uma sessão (Prioridade: P1)
 
-A learner opens the app, starts a study session, and is shown flashcards one
-at a time (front: English word, back: definition/translation/example). For
-each card they reveal the answer, judge how well they recalled it, and the
-app moves to the next due card until none remain.
+Um aprendiz abre o app, inicia uma sessão de estudo e vê flashcards um de
+cada vez (frente: palavra em inglês, verso: definição/tradução/exemplo).
+Para cada card, ele revela a resposta, julga o quão bem lembrou e o app
+avança para o próximo card devido até que nenhum reste.
 
-**Why this priority**: This is the entire reason the app exists. Without a
-working study session, there is no product — everything else (deck lists,
-stats, settings) is secondary.
+**Por que essa prioridade**: Esta é a razão de existir do app. Sem uma
+sessão de estudo funcionando, não há produto — tudo o mais (listas de
+decks, estatísticas, configurações) é secundário.
 
-**Independent Test**: Seed one deck with a handful of due cards, start a
-session, answer through all cards with different recall grades, and confirm
-the session ends cleanly with no due cards left to show.
+**Teste Independente**: Semear um deck com alguns cards devidos, iniciar
+uma sessão, responder todos os cards com notas diferentes e confirmar que
+a sessão termina de forma limpa sem cards devidos restantes.
 
-**Acceptance Scenarios**:
+**Cenários de Aceitação**:
 
-1. **Given** a deck with due cards, **When** the learner starts a study
-   session, **Then** the first due card is shown with its front side only
-   (answer hidden).
-2. **Given** a card's front is shown, **When** the learner reveals the
-   answer, **Then** the back side (definition/example) is shown along with
-   recall-grading options.
-3. **Given** the answer is revealed, **When** the learner selects a recall
-   grade, **Then** the card is scored, the session advances to the next due
-   card (or ends if none remain), and the graded card is not shown again in
-   this session.
-4. **Given** the last due card has just been graded, **When** the session
-   advances, **Then** the learner sees a clear "session complete" state
-   instead of an empty or stuck screen.
-
----
-
-### User Story 2 - See what's due before studying (Priority: P2)
-
-Before committing to a session, a learner wants to see their deck(s) and how
-many cards are due now, so they know what they're about to study.
-
-**Why this priority**: Supports the core loop by letting the learner decide
-when/what to study, matching the benchmark's deck-list-first navigation, but
-the app is still usable end-to-end without it (a single default deck could
-auto-start).
-
-**Independent Test**: With a seeded deck containing a known due count, open
-the app and verify the displayed due count matches, then start studying from
-that screen.
-
-**Acceptance Scenarios**:
-
-1. **Given** the app has one or more seeded decks, **When** the learner opens
-   the deck list, **Then** each deck shows its name and current due-card
-   count.
-2. **Given** a deck has zero due cards, **When** the learner views it,
-   **Then** the deck is shown as up to date and studying is disabled or
-   clearly a no-op (no crash, no empty session).
-3. **Given** a deck with due cards, **When** the learner selects it,
-   **Then** User Story 1's study session starts scoped to that deck.
+1. **Dado** um deck com cards devidos, **Quando** o aprendiz inicia uma
+   sessão de estudo, **Então** o primeiro card devido é mostrado apenas
+   com a frente (resposta oculta).
+2. **Dado** a frente de um card mostrada, **Quando** o aprendiz revela a
+   resposta, **Então** o verso (definição/exemplo) é mostrado junto com as
+   opções de avaliação de lembrança.
+3. **Dado** a resposta revelada, **Quando** o aprendiz seleciona uma nota,
+   **Então** o card é avaliado, a sessão avança para o próximo card devido
+   (ou termina se nenhum restar), e o card avaliado não é mostrado
+   novamente nessa sessão.
+4. **Dado** o último card devido acabou de ser avaliado, **Quando** a
+   sessão avança, **Então** o aprendiz vê um estado claro de "sessão
+   concluída" em vez de uma tela vazia ou travada.
 
 ---
 
-### User Story 3 - Recall grade determines next review date (Priority: P1)
+### História de Usuário 2 - Ver o que está devido antes de estudar (Prioridade: P2)
 
-After grading a card, the learner's response measurably changes when that
-card comes back: a poor grade brings it back sooner (same day or next day),
-a good grade pushes it further out, following a spaced-repetition pattern
-that lengthens with consecutive correct recalls.
+Antes de se comprometer com uma sessão, um aprendiz quer ver seu(s)
+deck(s) e quantos cards estão devidos agora, para saber o que está prestes
+a estudar.
 
-**Why this priority**: This is what separates "flashcards" from a real
-spaced-repetition app, and it's the mechanism the whole product benchmarks
-against AnkiApp on. It must work correctly from the first release, since
-review history compounds over time and cannot be easily "fixed up" later
-without corrupting a learner's schedule.
+**Por que essa prioridade**: Dá suporte ao loop central permitindo que o
+aprendiz decida quando/o que estudar, alinhado com a navegação do
+benchmark centrada em lista de decks, mas o app ainda é utilizável de
+ponta a ponta sem isso (um deck padrão único poderia iniciar
+automaticamente).
 
-**Independent Test**: Grade the same card with the lowest grade and verify
-its next-due date is sooner than grading an equivalent card with the highest
-grade; repeat a card through several "good" grades and confirm the interval
-between due dates grows each time.
+**Teste Independente**: Com um deck semeado contendo uma contagem de
+devidos conhecida, abrir o app e verificar que a contagem exibida
+corresponde, depois iniciar o estudo a partir dessa tela.
 
-**Acceptance Scenarios**:
+**Cenários de Aceitação**:
 
-1. **Given** a new (never-reviewed) card, **When** the learner grades it as
-   "did not recall", **Then** the card's next due time is very soon (within
-   the same day).
-2. **Given** a new card, **When** the learner grades it as "recalled
-   easily", **Then** the card's next due date is set further out than a
-   "did not recall" grade would produce.
-3. **Given** a card that has already been graded "good" or better on its
-   last two reviews, **When** it is graded "good" or better again, **Then**
-   its new interval is longer than its previous interval.
-4. **Given** a card the learner is actively struggling with (recent low
-   grades), **When** it is graded low again, **Then** its interval resets
-   toward a short review cycle instead of continuing to grow.
+1. **Dado** o app tem um ou mais decks semeados, **Quando** o aprendiz
+   abre a lista de decks, **Então** cada deck mostra seu nome e a
+   contagem atual de cards devidos.
+2. **Dado** um deck tem zero cards devidos, **Quando** o aprendiz o
+   visualiza, **Então** o deck é mostrado como em dia e estudar é
+   desabilitado ou claramente um no-op (sem crash, sem sessão vazia).
+3. **Dado** um deck com cards devidos, **Quando** o aprendiz o seleciona,
+   **Então** a sessão de estudo da História de Usuário 1 inicia com
+   escopo nesse deck.
 
 ---
 
-### Edge Cases
+### História de Usuário 3 - A nota de lembrança determina a próxima data de revisão (Prioridade: P1)
 
-- What happens when a learner opens the app for the very first time with no
-  review history? All seeded cards should be treated as new/due so a first
-  session is always possible.
-- What happens when a study session is interrupted (app closed/backgrounded
-  mid-session) before a card is graded? On return, that card's ungraded
-  state must not be lost or double-counted — it should simply still be due.
-- How does the system handle a deck with zero cards at all (not just zero
-  due)? The learner must see a clear "no cards in this deck" state, distinct
-  from "nothing due right now".
-- What happens if the learner grades a card faster than the UI can persist
-  the previous grade (rapid repeated input)? Grades must be applied in order
-  and no grade may be silently dropped.
+Depois de avaliar um card, a resposta do aprendiz muda de forma
+mensurável quando esse card volta: uma nota ruim traz o card de volta mais
+cedo (no mesmo dia ou no dia seguinte), uma nota boa o empurra para mais
+longe, seguindo um padrão de repetição espaçada que se alonga com
+lembranças corretas consecutivas.
 
-## Requirements *(mandatory)*
+**Por que essa prioridade**: É isso que separa "flashcards" de um app de
+repetição espaçada de verdade, e é o mecanismo em que o produto inteiro se
+baseia no benchmark contra o AnkiApp. Precisa funcionar corretamente desde
+o primeiro lançamento, já que o histórico de revisões se acumula ao longo
+do tempo e não pode ser facilmente "corrigido" depois sem corromper o
+cronograma de um aprendiz.
 
-### Functional Requirements
+**Teste Independente**: Avaliar o mesmo card com a nota mais baixa e
+verificar que sua próxima data de vencimento é mais cedo do que avaliar um
+card equivalente com a nota mais alta; repetir um card por várias notas
+"boas" e confirmar que o intervalo entre as datas de vencimento cresce a
+cada vez.
 
-- **FR-001**: System MUST present due cards one at a time within a study
-  session, front side (prompt) first with the back side (answer) hidden
-  until revealed.
-- **FR-002**: System MUST let the learner reveal a card's back side (answer)
-  on demand.
-- **FR-003**: System MUST offer a small, fixed set of recall-grade options
-  after the answer is revealed (at minimum: "did not recall" and "recalled",
-  with intermediate grades for "recalled with difficulty" and "recalled
-  easily" to support Story 3's interval growth/shrink behavior).
-- **FR-004**: System MUST record a graded review for a card, including which
-  grade was given and when.
-- **FR-005**: System MUST compute the card's next due date/time from its
-  grade and prior review history using a spaced-repetition scheduling rule
-  (lower grades shorten/reset the interval, higher grades lengthen it).
-- **FR-006**: System MUST NOT show a card again within the same study session
-  once it has been graded.
-- **FR-007**: System MUST end a study session with a clear "complete" state
-  when no due cards remain, rather than showing an empty or blank screen.
-- **FR-008**: System MUST list the learner's deck(s) with a per-deck count of
-  currently due cards.
-- **FR-009**: System MUST treat a deck with zero due cards as "up to date"
-  and prevent starting an empty session from it.
-- **FR-010**: System MUST distinguish, in the deck view, between a deck that
-  has no cards at all and a deck that has cards but none currently due.
-- **FR-011**: System MUST persist review results locally so due counts and
-  next-due dates are correct the next time the app is opened, with no
-  network connection required.
-- **FR-012**: System MUST seed at least one deck from an Oxford 3000/5000
-  word-list source (word, definition, and an example or usage note per
-  card) so a learner has real content to study on first launch.
-- **FR-013**: System MUST recover an interrupted, ungraded card as still due
-  (not lost, not duplicated) if the app is closed mid-session and reopened.
+**Cenários de Aceitação**:
 
-### Key Entities
+1. **Dado** um card novo (nunca revisado), **Quando** o aprendiz o avalia
+   como "não lembrei", **Então** o próximo horário de vencimento do card é
+   muito em breve (dentro do mesmo dia).
+2. **Dado** um card novo, **Quando** o aprendiz o avalia como "lembrei
+   facilmente", **Então** a próxima data de vencimento do card é definida
+   mais à frente do que uma nota "não lembrei" produziria.
+3. **Dado** um card que já foi avaliado como "bom" ou melhor em suas
+   últimas duas revisões, **Quando** ele é avaliado como "bom" ou melhor
+   novamente, **Então** seu novo intervalo é maior que seu intervalo
+   anterior.
+4. **Dado** um card com o qual o aprendiz está ativamente com dificuldade
+   (notas baixas recentes), **Quando** ele é avaliado com nota baixa
+   novamente, **Então** seu intervalo reinicia para um ciclo de revisão
+   curto em vez de continuar crescendo.
 
-- **Deck**: A named collection of cards a learner studies as a unit (e.g.
-  one Oxford level such as "Oxford 3000 — A1-A2"). Has a name and a count of
-  cards currently due.
-- **Card**: A single study item belonging to a deck, with a front (prompt —
-  the word), a back (answer — definition/example/translation), and its own
-  scheduling state (current interval, next due date, ease/strength derived
-  from review history).
-- **Review**: A single graded event for a card — which grade was given and
-  when — that feeds the scheduling calculation for that card's next due
-  date. History of reviews is what makes the interval grow/shrink over time.
+---
 
-## Success Criteria *(mandatory)*
+### Casos de Borda
 
-### Measurable Outcomes
+- O que acontece quando um aprendiz abre o app pela primeira vez sem
+  histórico de revisão? Todos os cards semeados devem ser tratados como
+  novos/devidos para que uma primeira sessão seja sempre possível.
+- O que acontece quando uma sessão de estudo é interrompida (app fechado/
+  em segundo plano no meio da sessão) antes de um card ser avaliado? Ao
+  retornar, o estado não avaliado desse card não pode ser perdido nem
+  contado em duplicidade — ele deve simplesmente continuar devido.
+- Como o sistema lida com um deck sem nenhum card (não apenas zero
+  devidos)? O aprendiz deve ver um estado claro de "nenhum card neste
+  deck", distinto de "nada devido agora".
+- O que acontece se o aprendiz avaliar um card mais rápido do que a UI
+  consegue persistir a nota anterior (entrada repetida rápida)? As notas
+  devem ser aplicadas em ordem e nenhuma nota pode ser descartada
+  silenciosamente.
 
-- **SC-001**: A learner can go from opening the app to completing their
-  first graded card in under 30 seconds, with no account setup required.
-- **SC-002**: A learner can study every currently-due card in a deck in one
-  uninterrupted session without the app losing, duplicating, or skipping a
-  card.
-- **SC-003**: Grading a card "did not recall" versus "recalled easily"
-  produces a measurably different next-due date in 100% of cases (the lower
-  grade is never scheduled later than the higher grade for equivalent review
-  history).
-- **SC-004**: A card graded "good" or better on consecutive reviews shows a
-  strictly increasing interval across at least the first 4 successful
-  reviews, matching the expected spaced-repetition growth pattern.
-- **SC-005**: The app is fully studyable (start session, grade cards, see
-  next-due changes) with the device in airplane mode.
-- **SC-006**: On first install, a learner has at least one deck with
-  real Oxford-sourced vocabulary ready to study — zero manual content setup
-  required.
+## Requisitos *(obrigatório)*
 
-## Assumptions
+### Requisitos Funcionais
 
-- A single local learner profile is assumed for the MVP — no accounts,
-  multi-user support, or login. This aligns with the constitution's
-  offline-first, no-backend MVP scope.
-- The MVP ships with a fixed set of Oxford 3000/5000-derived decks (e.g. by
-  CEFR level). Learners cannot create, edit, or import their own decks/cards
-  in this feature; that is out of scope until a later feature.
-- Recall grading uses a four-level scale (did not recall / recalled with
-  difficulty / recalled / recalled easily), matching common spaced-repetition
-  UX (including the benchmark app) closely enough to validate Story 3's
-  interval behavior, without mandating a specific algorithm implementation.
-- "Due" is determined by comparing a card's stored next-due date/time to the
-  device's current local time; no server-side clock or timezone sync is
-  required for the MVP.
-- Study sessions are scoped to one deck at a time for the MVP; a combined
-  "study everything due across decks" view is out of scope until requested.
-- Exact Oxford source licensing/usage terms are governed by the
-  constitution's content-pipeline principle and are validated separately in
-  the content-ingestion work, not re-litigated in this spec.
+- **FR-001**: O sistema DEVE apresentar cards devidos um de cada vez
+  dentro de uma sessão de estudo, com o lado da frente (pergunta) primeiro
+  e o verso (resposta) oculto até ser revelado.
+- **FR-002**: O sistema DEVE permitir que o aprendiz revele o verso
+  (resposta) de um card sob demanda.
+- **FR-003**: O sistema DEVE oferecer um conjunto pequeno e fixo de
+  opções de nota de lembrança depois que a resposta é revelada (no
+  mínimo: "não lembrei" e "lembrei", com notas intermediárias para
+  "lembrei com dificuldade" e "lembrei facilmente" para dar suporte ao
+  comportamento de crescimento/redução de intervalo da História 3).
+- **FR-004**: O sistema DEVE registrar uma revisão avaliada de um card,
+  incluindo qual nota foi dada e quando.
+- **FR-005**: O sistema DEVE calcular a próxima data/horário de
+  vencimento do card a partir da nota e do histórico de revisões
+  anteriores usando uma regra de agendamento de repetição espaçada (notas
+  mais baixas encurtam/reiniciam o intervalo, notas mais altas o
+  alongam).
+- **FR-006**: O sistema NÃO DEVE mostrar um card novamente dentro da
+  mesma sessão de estudo depois que ele foi avaliado.
+- **FR-007**: O sistema DEVE encerrar uma sessão de estudo com um estado
+  claro de "concluída" quando nenhum card devido restar, em vez de mostrar
+  uma tela vazia ou em branco.
+- **FR-008**: O sistema DEVE listar o(s) deck(s) do aprendiz com uma
+  contagem por deck de cards atualmente devidos.
+- **FR-009**: O sistema DEVE tratar um deck com zero cards devidos como
+  "em dia" e impedir o início de uma sessão vazia a partir dele.
+- **FR-010**: O sistema DEVE distinguir, na visão do deck, entre um deck
+  que não tem nenhum card e um deck que tem cards mas nenhum atualmente
+  devido.
+- **FR-011**: O sistema DEVE persistir os resultados das revisões
+  localmente para que as contagens de devidos e as próximas datas de
+  vencimento estejam corretas na próxima vez que o app for aberto, sem
+  necessidade de conexão de rede.
+- **FR-012**: O sistema DEVE semear ao menos um deck a partir de uma fonte
+  de lista de palavras Oxford 3000/5000 (palavra, definição e um exemplo
+  ou nota de uso por card) para que o aprendiz tenha conteúdo real para
+  estudar no primeiro lançamento.
+- **FR-013**: O sistema DEVE recuperar um card interrompido e não avaliado
+  como ainda devido (não perdido, não duplicado) se o app for fechado no
+  meio de uma sessão e reaberto.
+
+### Entidades Principais
+
+- **Deck**: Uma coleção nomeada de cards que um aprendiz estuda como uma
+  unidade (ex.: um nível Oxford como "Oxford 3000 — A1-A2"). Tem um nome e
+  uma contagem de cards atualmente devidos.
+- **Card**: Um único item de estudo pertencente a um deck, com uma frente
+  (pergunta — a palavra), um verso (resposta — definição/exemplo/
+  tradução) e seu próprio estado de agendamento (intervalo atual, próxima
+  data de vencimento, facilidade/força derivada do histórico de
+  revisões).
+- **Review (Revisão)**: Um único evento avaliado para um card — qual nota
+  foi dada e quando — que alimenta o cálculo de agendamento para a
+  próxima data de vencimento desse card. O histórico de revisões é o que
+  faz o intervalo crescer/encolher ao longo do tempo.
+
+## Critérios de Sucesso *(obrigatório)*
+
+### Resultados Mensuráveis
+
+- **SC-001**: Um aprendiz consegue ir de abrir o app a concluir seu
+  primeiro card avaliado em menos de 30 segundos, sem necessidade de
+  configuração de conta.
+- **SC-002**: Um aprendiz consegue estudar todos os cards atualmente
+  devidos em um deck em uma única sessão ininterrupta sem que o app
+  perca, duplique ou pule um card.
+- **SC-003**: Avaliar um card como "não lembrei" versus "lembrei
+  facilmente" produz uma próxima data de vencimento mensuravelmente
+  diferente em 100% dos casos (a nota mais baixa nunca é agendada para
+  depois da nota mais alta, para o mesmo histórico de revisão).
+- **SC-004**: Um card avaliado como "bom" ou melhor em revisões
+  consecutivas mostra um intervalo estritamente crescente ao longo de
+  pelo menos as primeiras 4 revisões bem-sucedidas, correspondendo ao
+  padrão de crescimento esperado de repetição espaçada.
+- **SC-005**: O app é totalmente estudável (iniciar sessão, avaliar
+  cards, ver mudanças na próxima data de vencimento) com o dispositivo em
+  modo avião.
+- **SC-006**: Na primeira instalação, o aprendiz tem ao menos um deck com
+  vocabulário real originado da Oxford pronto para estudar — zero
+  configuração manual de conteúdo necessária.
+
+## Suposições
+
+- Assume-se um único perfil de aprendiz local para o MVP — sem contas,
+  suporte multiusuário ou login. Isso está alinhado com o escopo do MVP
+  offline-first e sem backend definido na constituição.
+- O MVP é lançado com um conjunto fixo de decks derivados da Oxford
+  3000/5000 (ex.: por nível CEFR). Aprendizes não podem criar, editar ou
+  importar seus próprios decks/cards nesta funcionalidade; isso fica fora
+  de escopo até uma funcionalidade futura.
+- A avaliação de lembrança usa uma escala de quatro níveis (não lembrei /
+  lembrei com dificuldade / lembrei / lembrei facilmente), próxima o
+  suficiente da UX comum de SRS (incluindo o app de benchmark) para
+  validar o comportamento de intervalo da História 3, sem impor um
+  algoritmo de implementação específico.
+- "Devido" é determinado comparando a data/horário de vencimento
+  armazenada de um card com a hora local atual do dispositivo; nenhuma
+  sincronização de relógio de servidor ou fuso horário é necessária para o
+  MVP.
+- Sessões de estudo têm escopo em um deck por vez para o MVP; uma visão
+  combinada de "estudar tudo que está devido entre decks" fica fora de
+  escopo até ser solicitada.
+- Os termos exatos de licenciamento/uso da fonte Oxford são regidos pelo
+  princípio de pipeline de conteúdo da constituição e são validados
+  separadamente no trabalho de ingestão de conteúdo, não são
+  rediscutidos nesta especificação.

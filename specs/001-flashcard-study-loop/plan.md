@@ -1,122 +1,125 @@
-# Implementation Plan: Flashcard Study Loop (MVP)
+# Plano de Implementação: Loop de Estudo com Flashcards (MVP)
 
-**Branch**: `001-flashcard-study-loop` | **Date**: 2026-08-04 | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-flashcard-study-loop` | **Data**: 2026-08-04 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/001-flashcard-study-loop/spec.md`
+**Entrada**: Especificação da funcionalidade em `/specs/001-flashcard-study-loop/spec.md`
 
-## Summary
+## Resumo
 
-Build the core study loop: a learner opens the app, sees deck(s) seeded from
-Oxford 3000/5000 word lists with due counts, studies due cards one at a time
-(reveal answer → grade recall), and each grade reschedules the card via a
-spaced-repetition algorithm (SM-2) whose interval visibly grows with
-consecutive good grades and resets on poor ones. Everything runs fully
-offline against an on-device SQLite database; content is prepared ahead of
-time by a separate, non-runtime ingestion pipeline and shipped as a
-versioned seed dataset.
+Construir o loop de estudo central: um aprendiz abre o app, vê o(s)
+deck(s) semeados a partir das listas de palavras Oxford 3000/5000 com
+contagens de devidos, estuda cards devidos um de cada vez (revelar
+resposta → avaliar lembrança), e cada nota reagenda o card via um
+algoritmo de repetição espaçada (SM-2) cujo intervalo cresce visivelmente
+com notas boas consecutivas e reinicia com notas ruins. Tudo roda
+totalmente offline contra um banco de dados SQLite no dispositivo; o
+conteúdo é preparado antecipadamente por um pipeline de ingestão separado,
+fora do runtime, e distribuído como um conjunto de dados semente
+versionado.
 
-## Technical Context
+## Contexto Técnico
 
-**Language/Version**: TypeScript 5.x (strict mode), Node.js 22 for tooling/pipeline scripts
+**Linguagem/Versão**: TypeScript 5.x (modo strict), Node.js 22 para scripts de ferramentas/pipeline
 
-**Primary Dependencies**: React Native + Expo (managed workflow), `expo-router` for navigation, `expo-sqlite` for on-device persistence
+**Dependências Principais**: React Native + Expo (managed workflow), `expo-router` para navegação, `expo-sqlite` para persistência no dispositivo
 
-**Storage**: SQLite on-device via `expo-sqlite` (single local database file; no remote database for MVP)
+**Armazenamento**: SQLite no dispositivo via `expo-sqlite` (um único arquivo de banco de dados local; nenhum banco de dados remoto para o MVP)
 
-**Testing**: Jest + `@testing-library/react-native` for app code; plain Jest (no RN dependency) for the pure scheduler module and the content-ingestion pipeline
+**Testes**: Jest + `@testing-library/react-native` para o código do app; Jest simples (sem dependência de RN) para o módulo puro do agendador e para o pipeline de ingestão de conteúdo
 
-**Target Platform**: iOS and Android via Expo (single React Native codebase); Expo Go / EAS build for device testing
+**Plataforma Alvo**: iOS e Android via Expo (uma única base de código React Native); Expo Go / EAS build para testes em dispositivo
 
-**Project Type**: Mobile app — single Expo project (no separate backend/API; content pipeline is a standalone Node script, not a runtime service)
+**Tipo de Projeto**: App mobile — projeto Expo único (sem backend/API separado; o pipeline de conteúdo é um script Node independente, não um serviço em execução)
 
-**Performance Goals**: Study screen answer reveal and grade-to-next-card transition each render in under 100ms perceived latency on a mid-range device; app cold start to first due card under 2s
+**Metas de Performance**: Revelação de resposta na tela de estudo e transição de nota-para-próximo-card renderizam em menos de 100ms de latência percebida em um dispositivo de gama média; cold start do app até o primeiro card devido em menos de 2s
 
-**Constraints**: Fully offline-capable (Constitution Principle I) — no network call is on the critical path for opening the app, starting a session, grading a card, or seeing the next due date; scheduler MUST be a pure, framework-agnostic module (Constitution: Technology & Data Constraints)
+**Restrições**: Totalmente capaz de operar offline (Princípio I da Constituição) — nenhuma chamada de rede está no caminho crítico de abrir o app, iniciar uma sessão, avaliar um card ou ver a próxima data de vencimento; o agendador DEVE ser um módulo puro e agnóstico de framework (Constituição: Restrições de Tecnologia e Dados)
 
-**Scale/Scope**: Single local learner, a handful of decks (one per Oxford CEFR band, e.g. A1-A2/B1/B2), on the order of 3,000-5,000 cards total across all decks — comfortably within SQLite's capability on-device
+**Escala/Escopo**: Um único aprendiz local, um punhado de decks (um por faixa CEFR da Oxford, ex.: A1-A2/B1/B2), da ordem de 3.000-5.000 cards no total entre todos os decks — confortavelmente dentro da capacidade do SQLite no dispositivo
 
-## Constitution Check
+## Verificação da Constituição
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: Deve passar antes da Fase 0 de pesquisa. Reverificar após o design da Fase 1.*
 
-| Principle | Check | Status |
+| Princípio | Verificação | Status |
 |---|---|---|
-| I. Offline-First, Local Ownership | SQLite is the sole source of truth; no network calls in the study/grade/reschedule path | PASS |
-| II. Spaced Repetition Is the Core Loop | This entire feature *is* the core loop; no other feature is being built before it | PASS |
-| III. Test-First for Domain Logic | Scheduler module and repositories are planned with tests-first (see Phase 1 data-model + tasks); screens get one smoke test per flow | PASS (enforced at task-writing time) |
-| IV. Traceable, License-Respecting Content Pipeline | Seed dataset is produced by a separate `content-pipeline/` script recording source/date/level; real Oxford material is gated on `content/SOURCES.md` confirming license terms — until then the app ships with a small sample/placeholder dataset of the same shape | PASS (with explicit placeholder-first fallback) |
-| V. MVP Discipline | No accounts, sync, custom decks, or multi-deck combined sessions in this plan — matches spec Assumptions | PASS |
+| I. Offline-First, Propriedade Local | SQLite é a única fonte da verdade; nenhuma chamada de rede no caminho de estudar/avaliar/reagendar | PASSA |
+| II. Repetição Espaçada É o Loop Central | Esta funcionalidade inteira *é* o loop central; nenhuma outra funcionalidade está sendo construída antes dela | PASSA |
+| III. Testes Primeiro para Lógica de Domínio | O módulo do agendador e os repositórios são planejados com testes primeiro (ver Fase 1 data-model + tasks); telas recebem um teste de smoke por fluxo | PASSA (aplicado na escrita das tarefas) |
+| IV. Pipeline de Conteúdo Rastreável e Respeitando Licenças | O dataset semente é produzido por um script separado em `content-pipeline/` que registra fonte/data/nível; material real da Oxford é condicionado a `content/SOURCES.md` confirmando os termos de licença — até lá o app distribui um pequeno dataset de amostra/placeholder com o mesmo formato | PASSA (com fallback explícito de placeholder primeiro) |
+| V. Disciplina de MVP | Sem contas, sincronização, decks personalizados ou sessões combinadas entre múltiplos decks neste plano — condiz com as Suposições da spec | PASSA |
 
-No violations to justify; Complexity Tracking is empty.
+Nenhuma violação a justificar; o Rastreamento de Complexidade está vazio.
 
-## Project Structure
+## Estrutura do Projeto
 
-### Documentation (this feature)
+### Documentação (esta funcionalidade)
 
 ```text
 specs/001-flashcard-study-loop/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md         # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+├── plan.md              # Este arquivo (saída do comando /speckit-plan)
+├── research.md          # Saída da Fase 0 (/speckit-plan)
+├── data-model.md         # Saída da Fase 1 (/speckit-plan)
+├── quickstart.md        # Saída da Fase 1 (/speckit-plan)
+├── contracts/           # Saída da Fase 1 (/speckit-plan)
+└── tasks.md             # Saída da Fase 2 (comando /speckit-tasks - NÃO criado pelo /speckit-plan)
 ```
 
-### Source Code (repository root)
+### Código-fonte (raiz do repositório)
 
 ```text
-app/                          # expo-router file-based routes (screens only, thin)
+app/                          # rotas baseadas em arquivo do expo-router (apenas telas, finas)
 ├── _layout.tsx
-├── index.tsx                 # Deck list (User Story 2)
+├── index.tsx                 # Lista de decks (História de Usuário 2)
 └── study/
-    └── [deckId].tsx          # Study session screen (User Story 1 + 3)
+    └── [deckId].tsx          # Tela de sessão de estudo (Histórias 1 + 3)
 
 src/
 ├── domain/
-│   ├── scheduler.ts          # Pure SM-2 scheduling function (no RN/Expo imports)
-│   ├── scheduler.types.ts    # Grade, CardScheduleState, ScheduleResult types
-│   └── deck.ts                # Due-card selection / session-ordering logic
+│   ├── scheduler.ts          # Função pura de agendamento SM-2 (sem imports de RN/Expo)
+│   ├── scheduler.types.ts    # Tipos Grade, CardScheduleState, ScheduleResult
+│   └── deck.ts                # Lógica de seleção de cards devidos / ordenação de sessão
 ├── data/
-│   ├── db.ts                  # expo-sqlite connection + migrations
-│   ├── schema.sql             # Deck / Card / Review tables
+│   ├── db.ts                  # Conexão expo-sqlite + migrações
+│   ├── schema.sql             # Tabelas Deck / Card / Review
 │   └── repositories/
 │       ├── deckRepository.ts
 │       ├── cardRepository.ts
 │       └── reviewRepository.ts
 ├── features/
-│   ├── deckList/               # Deck list view-model + components
-│   └── study/                  # Study session view-model + components (card flip, grade buttons)
+│   ├── deckList/               # View-model + componentes da lista de decks
+│   └── study/                  # View-model + componentes da sessão de estudo (flip de card, botões de nota)
 └── content/
-    └── seed/                   # Versioned JSON seed dataset(s) consumed at first run
+    └── seed/                   # Dataset(s) JSON versionado(s), consumido(s) na primeira execução
         └── oxford-3000-a1-a2.sample.json
 
-content-pipeline/               # Standalone Node/TS script, NOT part of the mobile runtime
-├── ingest-oxford.ts            # Source word list → versioned seed JSON
-├── sources/                    # Raw source material (gitignored until license confirmed)
-└── SOURCES.md                  # Per Constitution Principle IV: source, date, level, license status
+content-pipeline/               # Script Node/TS independente, NÃO faz parte do runtime mobile
+├── ingest-oxford.ts            # Lista de palavras fonte → JSON semente versionado
+├── sources/                    # Material fonte bruto (no .gitignore até a licença ser confirmada)
+└── SOURCES.md                  # Conforme Princípio IV da Constituição: fonte, data, nível, status de licença
 
 tests/
 ├── unit/
-│   ├── scheduler.test.ts       # Story 3: interval growth/shrink, first-review behavior
-│   └── deck.test.ts            # Due-card selection edge cases
+│   ├── scheduler.test.ts       # História 3: crescimento/redução de intervalo, comportamento na primeira revisão
+│   └── deck.test.ts            # Casos de borda da seleção de cards devidos
 ├── integration/
-│   ├── study-session.test.ts   # Story 1: full session flow against a seeded in-memory DB
-│   └── deck-list.test.ts       # Story 2: due counts, empty-deck states
+│   ├── study-session.test.ts   # História 1: fluxo completo de sessão contra um BD de teste semeado
+│   └── deck-list.test.ts       # História 2: contagens de devidos, estados de deck vazio
 └── content-pipeline/
-    └── ingest-oxford.test.ts   # Pipeline output shape/versioning
+    └── ingest-oxford.test.ts   # Formato/versionamento da saída do pipeline
 ```
 
-**Structure Decision**: Single Expo project at the repo root (Project Type:
-mobile-app, no backend). The scheduler and due-card selection logic live in
-`src/domain/` as plain TypeScript with zero React Native imports, per the
-constitution's testability/portability constraint — they are unit-tested
-directly with Jest, independent of the RN test renderer. Content ingestion
-is a separate `content-pipeline/` Node script (not bundled into the app
-runtime); its output is a static JSON file the app reads at first run,
-keeping Principle IV's traceability (source/date/level per dataset) outside
-the mobile codebase entirely.
+**Decisão de Estrutura**: Um único projeto Expo na raiz do repositório
+(Tipo de Projeto: app mobile, sem backend). O agendador e a lógica de
+seleção de cards devidos ficam em `src/domain/` como TypeScript puro, sem
+nenhum import de React Native, conforme a restrição de testabilidade/
+portabilidade da constituição — são testados diretamente com Jest,
+independente do renderizador de teste do RN. A ingestão de conteúdo é um
+script Node separado em `content-pipeline/` (não empacotado no runtime do
+app); sua saída é um arquivo JSON estático que o app lê na primeira
+execução, mantendo a rastreabilidade do Princípio IV (fonte/data/nível por
+dataset) totalmente fora da base de código mobile.
 
-## Complexity Tracking
+## Rastreamento de Complexidade
 
-*No Constitution Check violations — table intentionally empty.*
+*Nenhuma violação na Verificação da Constituição — tabela intencionalmente vazia.*

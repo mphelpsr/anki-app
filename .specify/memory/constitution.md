@@ -1,105 +1,119 @@
 <!--
-Sync Impact Report
-- Version change: [TEMPLATE] → 1.0.0 (initial ratification)
-- Modified principles: n/a (first version)
-- Added sections: Core Principles (I-V), Technology & Data Constraints,
-  Development Workflow, Governance
-- Removed sections: none
-- Templates requiring follow-up: none — plan/spec/tasks templates consume
-  this file at runtime and need no edits for this ratification.
-- Deferred TODOs: none
+Relatório de Impacto de Sincronização
+- Mudança de versão: [TEMPLATE] → 1.0.0 (ratificação inicial)
+- Princípios modificados: n/a (primeira versão)
+- Seções adicionadas: Princípios Fundamentais (I-V), Restrições de
+  Tecnologia e Dados, Fluxo de Desenvolvimento, Governança
+- Seções removidas: nenhuma
+- Templates que exigem acompanhamento: nenhum — os templates de
+  plan/spec/tasks consomem este arquivo em tempo de execução e não
+  precisam de edição para esta ratificação.
+- TODOs adiados: nenhum
 -->
 
-# AnkiApp-Benchmark Constitution
+# Constituição do AnkiApp-Benchmark
 
-## Core Principles
+## Princípios Fundamentais
 
-### I. Offline-First, Local Ownership
-The app MUST be fully usable with no network connection: study sessions,
-scheduling, and progress data all read and write to on-device storage first.
-Any future sync/backend feature MUST be additive and MUST NOT become a
-runtime dependency for the core study loop. Rationale: this mirrors the
-benchmark (AnkiApp) and keeps the MVP shippable without backend
-infrastructure or account systems.
+### I. Offline-First, Propriedade Local
+O app DEVE ser totalmente utilizável sem conexão de rede: sessões de
+estudo, agendamento e dados de progresso são lidos e gravados primeiro no
+armazenamento do próprio dispositivo. Qualquer funcionalidade futura de
+sincronização/backend DEVE ser aditiva e NÃO PODE se tornar uma dependência
+de execução para o loop de estudo principal. Racional: isso espelha o
+benchmark (AnkiApp) e mantém o MVP entregável sem infraestrutura de backend
+ou sistema de contas.
 
-### II. Spaced Repetition Is the Core Loop (NON-NEGOTIABLE)
-The product's reason to exist is the review loop: show a card, capture a
-graded response, reschedule the card via a spaced-repetition algorithm
-(SM-2 or a documented equivalent). This loop MUST be implemented, tested,
-and stable before any other feature (decks browser, statistics, theming,
-import/export UI) is built. No feature may alter or bypass the scheduler's
-core contract (inputs: card state + grade; output: next interval and due
-date) without a constitution amendment.
+### II. Repetição Espaçada É o Loop Central (NÃO NEGOCIÁVEL)
+A razão de existir do produto é o loop de revisão: mostrar um card,
+capturar uma resposta avaliada, reagendar o card via um algoritmo de
+repetição espaçada (SM-2 ou equivalente documentado). Esse loop DEVE estar
+implementado, testado e estável antes de qualquer outra funcionalidade
+(navegador de decks, estatísticas, temas, UI de importação/exportação).
+Nenhuma funcionalidade pode alterar ou contornar o contrato central do
+agendador (entradas: estado do card + nota; saída: próximo intervalo e
+data de vencimento) sem uma emenda constitucional.
 
-### III. Test-First for Domain Logic (NON-NEGOTIABLE)
-The scheduling algorithm, deck/card data model, and content-ingestion
-pipeline (Oxford word-list → card records) MUST have automated tests
-written before implementation, following red-green-refactor. UI components
-and screens are exempt from strict TDD but MUST have at least one
-integration/smoke test per user-facing flow before that flow ships. Untested
-scheduling logic is treated as a broken build, not a pending task.
+### III. Testes Primeiro para Lógica de Domínio (NÃO NEGOCIÁVEL)
+O algoritmo de agendamento, o modelo de dados de deck/card e o pipeline de
+ingestão de conteúdo (lista de palavras Oxford → registros de card) DEVEM
+ter testes automatizados escritos antes da implementação, seguindo
+red-green-refactor. Componentes de UI e telas são isentos de TDD estrito,
+mas DEVEM ter ao menos um teste de integração/smoke por fluxo voltado ao
+usuário antes desse fluxo ser lançado. Lógica de agendamento sem teste é
+tratada como build quebrado, não como tarefa pendente.
 
-### IV. Traceable, License-Respecting Content Pipeline
-All flashcard content sourced from Oxford word lists (e.g. Oxford 3000/5000)
-MUST go through a single, versioned ingestion pipeline that records: source
-document, extraction date, and word-list level (A1-C1). The pipeline output
-is treated as generated data, never hand-edited in place. Before any Oxford
-source material is bundled into the app or repository, the license/usage
-terms for that exact material MUST be confirmed and recorded in
-`content/SOURCES.md`; if terms are unclear, the pipeline ships with a
-placeholder/sample dataset instead of the real content until cleared.
+### IV. Pipeline de Conteúdo Rastreável e Respeitando Licenças
+Todo conteúdo de flashcard originado das listas de palavras Oxford (ex.:
+Oxford 3000/5000) DEVE passar por um único pipeline de ingestão versionado
+que registra: documento fonte, data de extração e nível da lista de
+palavras (A1-C1). A saída do pipeline é tratada como dado gerado, nunca
+editado manualmente no lugar. Antes de qualquer material fonte da Oxford
+ser empacotado no app ou no repositório, os termos de licença/uso daquele
+material específico DEVEM ser confirmados e registrados em
+`content/SOURCES.md`; se os termos não estiverem claros, o pipeline
+distribui um conjunto de dados placeholder/amostra em vez do conteúdo real
+até que isso seja esclarecido.
 
-### V. MVP Discipline (Simplicity, YAGNI)
-Every feature added before the core loop (Principle II) is proven end-to-end
-MUST be justified against the MVP scope: browse a deck, study due cards,
-grade a response, see the card rescheduled. Accounts, cloud sync, social
-features, multiple content sources, and custom deck creation are explicitly
-OUT of scope until the MVP loop is validated. Prefer three similar screens
-over one premature abstraction; prefer a local JSON/SQLite seed over a
-generic plugin system.
+### V. Disciplina de MVP (Simplicidade, YAGNI)
+Toda funcionalidade adicionada antes que o loop central (Princípio II)
+esteja comprovado de ponta a ponta DEVE ser justificada em relação ao
+escopo do MVP: navegar por um deck, estudar cards devidos, avaliar uma
+resposta, ver o card reagendado. Contas, sincronização em nuvem,
+funcionalidades sociais, múltiplas fontes de conteúdo e criação de decks
+personalizados estão explicitamente FORA de escopo até que o loop do MVP
+seja validado. Prefira três telas parecidas a uma abstração prematura;
+prefira um JSON/SQLite local semeado a um sistema de plugins genérico.
 
-## Technology & Data Constraints
+## Restrições de Tecnologia e Dados
 
-- **Client**: React Native with Expo (managed workflow unless a specific
-  native module forces a bare-workflow eject), TypeScript strict mode.
-- **Local persistence**: an embedded on-device database (SQLite via
-  `expo-sqlite` or an ORM built on it) is the source of truth for decks,
-  cards, and review history. No remote database is required for the MVP.
-- **Scheduling algorithm**: implemented as a pure, framework-agnostic
-  TypeScript module with no React/Expo imports, so it is independently
-  testable and portable if the client shell changes.
-- **Content ingestion**: a separate, scriptable pipeline (Node/TypeScript)
-  that turns source word lists into a versioned seed dataset consumed by
-  the app at build or first-run time. It does not run inside the mobile
-  runtime.
-- **No backend service** is introduced for the MVP. If a future feature
-  requires one, it is proposed via `/speckit-specify` as its own feature and
-  evaluated against Principle I before acceptance.
+- **Cliente**: React Native com Expo (managed workflow, a menos que um
+  módulo nativo específico force um eject para bare workflow), TypeScript
+  em modo strict.
+- **Persistência local**: um banco de dados embarcado no dispositivo
+  (SQLite via `expo-sqlite` ou um ORM construído sobre ele) é a fonte da
+  verdade para decks, cards e histórico de revisões. Nenhum banco de dados
+  remoto é necessário para o MVP.
+- **Algoritmo de agendamento**: implementado como um módulo TypeScript
+  puro e agnóstico de framework, sem imports de React/Expo, para que seja
+  testável de forma independente e portável caso o shell do cliente mude.
+- **Ingestão de conteúdo**: um pipeline scriptável separado (Node/
+  TypeScript) que transforma listas de palavras fonte em um conjunto de
+  dados semente versionado, consumido pelo app em tempo de build ou na
+  primeira execução. Não roda dentro do runtime mobile.
+- **Nenhum serviço de backend** é introduzido para o MVP. Se uma
+  funcionalidade futura exigir um, ela é proposta via `/speckit-specify`
+  como sua própria feature e avaliada contra o Princípio I antes de ser
+  aceita.
 
-## Development Workflow
+## Fluxo de Desenvolvimento
 
-- Features are defined with `/speckit-specify`, planned with `/speckit-plan`,
-  and broken down with `/speckit-tasks` before implementation begins.
-- Each feature plan MUST state which Core Principle(s) it touches and how it
-  stays compliant; a plan that cannot state this is not ready for
-  `/speckit-tasks`.
-- Pull requests/commits touching the scheduler or the content pipeline MUST
-  reference the tests that cover the change.
-- Benchmarking against AnkiApp is qualitative, not contractual: use it to
-  validate that core flows (deck list → study session → grading → due-date
-  update) feel equivalent, not to justify copying UI verbatim.
+- Funcionalidades são definidas com `/speckit-specify`, planejadas com
+  `/speckit-plan` e quebradas com `/speckit-tasks` antes de a implementação
+  começar.
+- Cada plano de funcionalidade DEVE declarar quais Princípios Fundamentais
+  ele toca e como permanece em conformidade; um plano que não consiga
+  declarar isso não está pronto para `/speckit-tasks`.
+- Pull requests/commits que tocam o agendador ou o pipeline de conteúdo
+  DEVEM referenciar os testes que cobrem a mudança.
+- O benchmark contra o AnkiApp é qualitativo, não contratual: use-o para
+  validar que os fluxos centrais (lista de decks → sessão de estudo →
+  avaliação → atualização da data de vencimento) parecem equivalentes, não
+  para justificar copiar a UI literalmente.
 
-## Governance
+## Governança
 
-This constitution supersedes ad-hoc practice for this repository. Amendments
-are made via `/speckit-constitution`, must state a version bump rationale
-(MAJOR/MINOR/PATCH per semantic versioning), and take effect immediately for
-new work. Existing in-flight plans are not retroactively invalidated but
-should be reconciled at their next revision.
+Esta constituição substitui a prática ad-hoc para este repositório.
+Emendas são feitas via `/speckit-constitution`, devem declarar uma
+justificativa de incremento de versão (MAJOR/MINOR/PATCH conforme
+versionamento semântico) e valem imediatamente para trabalho novo. Planos
+em andamento não são invalidados retroativamente, mas devem ser
+reconciliados na próxima revisão.
 
-All feature plans (`/speckit-plan`) MUST include a Constitution Check step
-that verifies compliance with the Core Principles above; unresolved
-violations must be justified in the plan's Complexity Tracking section or
-the plan is rejected.
+Todos os planos de funcionalidade (`/speckit-plan`) DEVEM incluir uma
+etapa de Verificação da Constituição que confirme conformidade com os
+Princípios Fundamentais acima; violações não resolvidas devem ser
+justificadas na seção de Rastreamento de Complexidade do plano, ou o plano
+é rejeitado.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-04 | **Last Amended**: 2026-08-04
+**Versão**: 1.0.0 | **Ratificada em**: 2026-08-04 | **Última Emenda**: 2026-08-04

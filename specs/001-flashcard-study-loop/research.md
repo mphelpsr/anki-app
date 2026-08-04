@@ -1,105 +1,119 @@
-# Phase 0 Research: Flashcard Study Loop (MVP)
+# Pesquisa da Fase 0: Loop de Estudo com Flashcards (MVP)
 
-## Scheduling algorithm
+## Algoritmo de agendamento
 
-**Decision**: Implement SM-2 (SuperMemo 2) with the standard four-grade
-mapping used by most modern SRS apps (including the benchmark):
+**Decisão**: Implementar o SM-2 (SuperMemo 2) com o mapeamento padrão de
+quatro notas usado pela maioria dos apps de SRS modernos (incluindo o
+benchmark):
 
-- Grade 0 "did not recall" → reset repetitions to 0, interval to 1 day, drop
-  ease factor by 0.20 (floor 1.30).
-- Grade 1 "recalled with difficulty" → interval grows slowly, ease factor
-  drops by 0.15.
-- Grade 2 "recalled" → standard SM-2 growth (interval × ease factor), ease
-  unchanged.
-- Grade 3 "recalled easily" → standard SM-2 growth, ease factor increases by
-  0.15.
+- Nota 0 "não lembrei" → reinicia repetições para 0, intervalo para 1
+  dia, reduz o fator de facilidade em 0,20 (piso 1,30).
+- Nota 1 "lembrei com dificuldade" → intervalo cresce devagar, fator de
+  facilidade reduz em 0,15.
+- Nota 2 "lembrei" → crescimento padrão do SM-2 (intervalo × fator de
+  facilidade), facilidade inalterada.
+- Nota 3 "lembrei facilmente" → crescimento padrão do SM-2, fator de
+  facilidade aumenta em 0,15.
 
-First two successful repetitions use fixed intervals (1 day, then 6 days)
-before the ease-factor multiplier takes over, per original SM-2.
+As duas primeiras repetições bem-sucedidas usam intervalos fixos (1 dia,
+depois 6 dias) antes que o multiplicador de fator de facilidade assuma o
+controle, conforme o SM-2 original.
 
-**Rationale**: SM-2 is simple enough to implement as a small pure function,
-well-documented, produces the exact "shorter on fail / longer on consecutive
-success" behavior the spec's Story 3 and SC-003/SC-004 require, and is close
-enough to the benchmark's own scheduler that a learner's intuition about
-interval growth will transfer.
+**Racional**: O SM-2 é simples o suficiente para implementar como uma
+pequena função pura, bem documentado, produz exatamente o comportamento
+"mais curto ao errar / mais longo em sucessos consecutivos" que a
+História 3 e os SC-003/SC-004 da spec exigem, e é próximo o suficiente do
+agendador do próprio benchmark para que a intuição do aprendiz sobre
+crescimento de intervalo se transfira.
 
-**Alternatives considered**: FSRS (newer, ML-fit algorithm — more accurate
-long-term but higher implementation/testing complexity, deferred until the
-MVP loop is validated); a flat "double the interval" naive scheme (rejected
-— fails SC-004's ease-based growth expectation and doesn't differentiate
-"recalled" vs "recalled easily").
+**Alternativas consideradas**: FSRS (algoritmo mais novo, ajustado por ML
+— mais preciso a longo prazo, porém com maior complexidade de
+implementação/teste, adiado até o loop do MVP ser validado); um esquema
+ingênuo de "dobrar o intervalo sempre" (rejeitado — falha na expectativa
+de crescimento baseado em facilidade do SC-004 e não diferencia "lembrei"
+de "lembrei facilmente").
 
-## Persistence layer
+## Camada de persistência
 
-**Decision**: `expo-sqlite` directly (its Promise-based / `useSQLiteContext`
-API), with hand-written SQL migrations in `src/data/schema.sql`, no ORM.
+**Decisão**: `expo-sqlite` diretamente (sua API baseada em Promise /
+`useSQLiteContext`), com migrações SQL escritas à mão em
+`src/data/schema.sql`, sem ORM.
 
-**Rationale**: The MVP's schema is three small tables (Deck, Card, Review).
-An ORM (Drizzle, WatermelonDB) adds a dependency and a learning-curve cost
-that isn't justified at this scale (Constitution Principle V: MVP
-discipline / YAGNI). `expo-sqlite` is officially supported by Expo, works
-fully offline, and is straightforward to unit-test by pointing repositories
-at an in-memory/temp database file in Jest.
+**Racional**: O esquema do MVP são três tabelas pequenas (Deck, Card,
+Review). Um ORM (Drizzle, WatermelonDB) adiciona uma dependência e um
+custo de curva de aprendizado que não se justifica nessa escala
+(Princípio V da Constituição: disciplina de MVP / YAGNI). O `expo-sqlite`
+é oficialmente suportado pelo Expo, funciona totalmente offline e é
+direto de testar apontando os repositórios para um arquivo de banco de
+dados em memória/temporário no Jest.
 
-**Alternatives considered**: WatermelonDB (built for sync — premature for a
-no-backend MVP); AsyncStorage/plain JSON file (rejected — no query
-capability for "cards due now", would require loading/scanning the whole
-dataset into memory every session).
+**Alternativas consideradas**: WatermelonDB (construído para
+sincronização — prematuro para um MVP sem backend); AsyncStorage/arquivo
+JSON simples (rejeitado — sem capacidade de query para "cards devidos
+agora", exigiria carregar/varrer o dataset inteiro em memória a cada
+sessão).
 
-## Navigation
+## Navegação
 
-**Decision**: `expo-router` (file-based routing) with two routes for this
-feature: `/` (deck list) and `/study/[deckId]` (study session).
+**Decisão**: `expo-router` (roteamento baseado em arquivos) com duas
+rotas para esta funcionalidade: `/` (lista de decks) e
+`/study/[deckId]` (sessão de estudo).
 
-**Rationale**: Expo's recommended default for new Expo projects, minimal
-boilerplate for a two-screen MVP, and leaves room to add more routes
-(stats, settings) later without restructuring.
+**Racional**: Padrão recomendado do Expo para novos projetos, boilerplate
+mínimo para um MVP de duas telas, e deixa espaço para adicionar mais
+rotas (estatísticas, configurações) depois sem reestruturação.
 
-**Alternatives considered**: React Navigation configured manually
-(equivalent capability, more setup code for no MVP benefit).
+**Alternativas consideradas**: React Navigation configurado manualmente
+(capacidade equivalente, mais código de configuração sem benefício para
+o MVP).
 
-## Content ingestion pipeline
+## Pipeline de ingestão de conteúdo
 
-**Decision**: A standalone Node/TypeScript script
-(`content-pipeline/ingest-oxford.ts`) that reads a source word list and
-writes a versioned JSON seed file under `src/content/seed/`. Until Oxford
-source material's license/usage terms are confirmed and recorded in
-`content-pipeline/SOURCES.md` (Constitution Principle IV), the pipeline
-ships with a small hand-authored **sample** dataset of the same shape (~20
-words) so the app is fully demoable and testable without depending on
-unresolved licensing.
+**Decisão**: Um script Node/TypeScript independente
+(`content-pipeline/ingest-oxford.ts`) que lê uma lista de palavras fonte e
+grava um arquivo JSON semente versionado em `src/content/seed/`. Até que
+os termos de licença/uso do material fonte da Oxford sejam confirmados e
+registrados em `content-pipeline/SOURCES.md` (Princípio IV da
+Constituição), o pipeline distribui um pequeno dataset de **amostra**
+escrito à mão, com o mesmo formato (~20 palavras), para que o app seja
+totalmente demonstrável e testável sem depender de questões de
+licenciamento não resolvidas.
 
-**Rationale**: Decouples "does the study loop work" (testable today) from
-"is the exact Oxford 3000/5000 content cleared for bundling" (a licensing
-question outside engineering). Keeps the constitution's traceability
-requirement enforceable via a single script and a single sources ledger,
-rather than ad-hoc content edits.
+**Racional**: Desacopla "o loop de estudo funciona" (testável hoje) de
+"o conteúdo exato da Oxford 3000/5000 está liberado para empacotamento"
+(uma questão de licenciamento fora da engenharia). Mantém o requisito de
+rastreabilidade da constituição aplicável por meio de um único script e
+um único registro de fontes, em vez de edições de conteúdo ad-hoc.
 
-**Alternatives considered**: Parsing Oxford PDFs directly on-device at
-runtime (rejected — violates the "ingestion does not run inside the mobile
-runtime" constraint, and PDF parsing is unnecessary complexity for a
-one-time build-time step); hand-typing all cards directly into the app
-(rejected — not traceable to a source, fails Principle IV).
+**Alternativas consideradas**: Fazer parsing dos PDFs da Oxford
+diretamente no dispositivo em tempo de execução (rejeitado — viola a
+restrição de "a ingestão não roda dentro do runtime mobile", e o parsing
+de PDF é complexidade desnecessária para uma etapa única em tempo de
+build); digitar todos os cards manualmente direto no app (rejeitado — não
+é rastreável até uma fonte, falha no Princípio IV).
 
-## Testing strategy
+## Estratégia de testes
 
-**Decision**: Jest as the single test runner for everything. `src/domain/`
-(scheduler, due-card selection) is tested with plain Jest, no RN
-dependencies — fast, framework-agnostic. `src/data/` repositories are
-tested against a real (temp-file) SQLite DB via `expo-sqlite`'s Node-testable
-API. Screens get one `@testing-library/react-native` smoke test per user
-story (start session → grade a card → see next card; view deck list → see
-due count).
+**Decisão**: Jest como único test runner para tudo. `src/domain/`
+(agendador, seleção de cards devidos) é testado com Jest puro, sem
+dependências de RN — rápido e agnóstico de framework. Os repositórios em
+`src/data/` são testados contra um BD SQLite real (arquivo temporário) via
+a API do `expo-sqlite` testável em Node. As telas recebem um teste de
+smoke com `@testing-library/react-native` por história de usuário (iniciar
+sessão → avaliar um card → ver o próximo card; ver lista de decks → ver
+contagem de devidos).
 
-**Rationale**: Matches Constitution Principle III (test-first for domain
-logic, at least one integration test per user-facing flow) with a single
-toolchain, avoiding the maintenance cost of mixing test runners.
+**Racional**: Atende ao Princípio III da Constituição (testes primeiro
+para lógica de domínio, ao menos um teste de integração por fluxo voltado
+ao usuário) com uma única ferramenta, evitando o custo de manutenção de
+misturar test runners.
 
-**Alternatives considered**: Detox/Maestro E2E on a simulator (valuable
-later for full-app regression, deferred — MVP discipline: not needed to
-validate the three user stories in this feature).
+**Alternativas consideradas**: E2E com Detox/Maestro em um simulador
+(valioso depois para regressão completa do app, adiado — disciplina de
+MVP: não necessário para validar as três histórias de usuário desta
+funcionalidade).
 
-## Open questions resolved
+## Questões em aberto resolvidas
 
-All `NEEDS CLARIFICATION` items from the Technical Context have been
-resolved above; none remain.
+Todos os itens `NEEDS CLARIFICATION` do Contexto Técnico foram resolvidos
+acima; nenhum permanece.

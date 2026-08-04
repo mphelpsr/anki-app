@@ -1,69 +1,72 @@
-# Quickstart: Validate the Flashcard Study Loop (MVP)
+# Guia Rápido: Validar o Loop de Estudo com Flashcards (MVP)
 
-Prerequisites: Node 22+, a way to run Expo (Expo Go app on a device/
-simulator, or `--web` for a quick check).
+Pré-requisitos: Node 22+, uma forma de rodar o Expo (app Expo Go em um
+dispositivo/simulador, ou `--web` para uma verificação rápida).
 
-## 1. Install and run
+## 1. Instalar e rodar
 
 ```bash
 npm install
 npx expo start
 ```
 
-Open on a simulator/device or press `w` for web preview.
+Abra em um simulador/dispositivo ou pressione `w` para a prévia web.
 
-## 2. Generate/refresh the seed content (optional — a sample seed ships by default)
+## 2. Gerar/atualizar o conteúdo semente (opcional — uma amostra já vem por padrão)
 
 ```bash
 npm run content:ingest
-# writes src/content/seed/*.json per contracts/seed-content-schema.json
+# grava src/content/seed/*.json conforme contracts/seed-content-schema.json
 ```
 
-Until `content-pipeline/SOURCES.md` confirms Oxford licensing terms, this
-produces the small sample dataset, not the full Oxford 3000/5000 — see
-[research.md](./research.md#content-ingestion-pipeline).
+Até que `content-pipeline/SOURCES.md` confirme os termos de licença da
+Oxford, isso produz o pequeno dataset de amostra, não o Oxford 3000/5000
+completo — ver
+[research.md](./research.md#pipeline-de-ingestão-de-conteúdo).
 
-## 3. Validate User Story 2 (deck list + due counts)
+## 3. Validar a História de Usuário 2 (lista de decks + contagem de devidos)
 
-1. Launch the app. The home screen (deck list) MUST show at least one deck
-   with a non-zero due count (fresh install ⇒ all seeded cards are due).
-2. Confirm the due count matches the number of cards in the sample seed
-   file for that deck.
+1. Abra o app. A tela inicial (lista de decks) DEVE mostrar ao menos um
+   deck com contagem de devidos maior que zero (instalação nova ⇒ todos
+   os cards semeados estão devidos).
+2. Confirme que a contagem de devidos corresponde ao número de cards no
+   arquivo de amostra semeado para aquele deck.
 
-## 4. Validate User Story 1 (study session)
+## 4. Validar a História de Usuário 1 (sessão de estudo)
 
-1. Tap a deck with due cards. The study screen MUST show the first card's
-   `front` only.
-2. Reveal the answer. The `back` MUST appear along with 4 grade buttons.
-3. Grade the card. The next due card MUST appear immediately, and the
-   graded card MUST NOT reappear later in the same session.
-4. Grade every remaining due card. The screen MUST show a clear "session
-   complete" state, and the deck list's due count for that deck MUST now
-   read 0.
+1. Toque em um deck com cards devidos. A tela de estudo DEVE mostrar
+   apenas a `front` do primeiro card.
+2. Revele a resposta. O `back` DEVE aparecer junto com 4 botões de nota.
+3. Avalie o card. O próximo card devido DEVE aparecer imediatamente, e o
+   card avaliado NÃO DEVE reaparecer mais tarde na mesma sessão.
+4. Avalie todos os cards devidos restantes. A tela DEVE mostrar um estado
+   claro de "sessão concluída", e a contagem de devidos daquele deck na
+   lista de decks DEVE agora mostrar 0.
 
-## 5. Validate User Story 3 (scheduling)
+## 5. Validar a História de Usuário 3 (agendamento)
 
-1. Grade a fresh card "did not recall" (grade 0). Inspect its stored
-   `nextDueAt` (via `tests/unit/scheduler.test.ts` or a debug log) — it MUST
-   be within the same day.
-2. Grade a different fresh card "recalled easily" (grade 3). Its
-   `nextDueAt` MUST be later than the grade-0 card's.
-3. Re-open that same deck the next day (or fast-forward the device clock)
-   and grade the grade-3 card "recalled" or "recalled easily" three more
-   times in a row. Its `intervalDays` MUST strictly increase each time —
-   confirms SC-004.
+1. Avalie um card novo como "não lembrei" (nota 0). Inspecione seu
+   `nextDueAt` armazenado (via `tests/unit/scheduler.test.ts` ou um log
+   de depuração) — DEVE estar dentro do mesmo dia.
+2. Avalie um card novo diferente como "lembrei facilmente" (nota 3). Seu
+   `nextDueAt` DEVE ser posterior ao do card de nota 0.
+3. Reabra o mesmo deck no dia seguinte (ou avance o relógio do
+   dispositivo) e avalie o card de nota 3 como "lembrei" ou "lembrei
+   facilmente" mais três vezes seguidas. Seu `intervalDays` DEVE crescer
+   estritamente a cada vez — confirma o SC-004.
 
-## 6. Automated verification
+## 6. Verificação automatizada
 
 ```bash
-npm test                 # unit + integration (Jest)
-npm test -- scheduler    # scheduler contract only (fast, no DB)
+npm test                 # unitários + integração (Jest)
+npm test -- scheduler    # apenas o contrato do agendador (rápido, sem BD)
 ```
 
-`tests/unit/scheduler.test.ts` MUST pass before any UI work is considered
-done, per Constitution Principle III (test-first for domain logic).
+`tests/unit/scheduler.test.ts` DEVE passar antes de qualquer trabalho de
+UI ser considerado concluído, conforme o Princípio III da Constituição
+(testes primeiro para lógica de domínio).
 
-## 7. Offline check (Constitution Principle I / SC-005)
+## 7. Verificação offline (Princípio I da Constituição / SC-005)
 
-Put the device/simulator in airplane mode and repeat steps 3-5. Every step
-MUST work identically with no network connection.
+Coloque o dispositivo/simulador em modo avião e repita os passos 3-5.
+Todos os passos DEVEM funcionar de forma idêntica sem conexão de rede.

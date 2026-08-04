@@ -1,37 +1,38 @@
-# Specification Quality Checklist: Flashcard Study Loop (MVP)
+# Checklist de Qualidade da Especificação: Loop de Estudo com Flashcards (MVP)
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-08-04
+**Propósito**: Validar a completude e a qualidade da especificação antes de avançar para o planejamento
+**Criado em**: 2026-08-04
 **Feature**: [spec.md](../spec.md)
 
-## Content Quality
+## Qualidade do Conteúdo
 
-- [x] No implementation details (languages, frameworks, APIs)
-- [x] Focused on user value and business needs
-- [x] Written for non-technical stakeholders
-- [x] All mandatory sections completed
+- [x] Nenhum detalhe de implementação (linguagens, frameworks, APIs)
+- [x] Focado em valor para o usuário e necessidades de negócio
+- [x] Escrito para stakeholders não técnicos
+- [x] Todas as seções obrigatórias preenchidas
 
-## Requirement Completeness
+## Completude dos Requisitos
 
-- [x] No [NEEDS CLARIFICATION] markers remain
-- [x] Requirements are testable and unambiguous
-- [x] Success criteria are measurable
-- [x] Success criteria are technology-agnostic (no implementation details)
-- [x] All acceptance scenarios are defined
-- [x] Edge cases are identified
-- [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified
+- [x] Nenhum marcador [NEEDS CLARIFICATION] restante
+- [x] Requisitos são testáveis e inequívocos
+- [x] Critérios de sucesso são mensuráveis
+- [x] Critérios de sucesso são agnósticos de tecnologia (sem detalhes de implementação)
+- [x] Todos os cenários de aceitação estão definidos
+- [x] Casos de borda foram identificados
+- [x] Escopo está claramente delimitado
+- [x] Dependências e suposições identificadas
 
-## Feature Readiness
+## Prontidão da Funcionalidade
 
-- [x] All functional requirements have clear acceptance criteria
-- [x] User scenarios cover primary flows
-- [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [x] Todos os requisitos funcionais têm critérios de aceitação claros
+- [x] Cenários de usuário cobrem os fluxos principais
+- [x] A funcionalidade atende aos resultados mensuráveis definidos nos Critérios de Sucesso
+- [x] Nenhum detalhe de implementação vaza para a especificação
 
-## Notes
+## Notas
 
-- All items pass. No [NEEDS CLARIFICATION] markers were needed — reasonable
-  defaults were documented in the Assumptions section (single local profile,
-  four-level recall grading, per-deck sessions, fixed seeded decks for MVP).
-- Ready for `/speckit-plan`.
+- Todos os itens aprovados. Nenhum marcador [NEEDS CLARIFICATION] foi
+  necessário — padrões razoáveis foram documentados na seção de
+  Suposições (perfil local único, avaliação de lembrança em quatro
+  níveis, sessões por deck, decks fixos semeados para o MVP).
+- Pronto para `/speckit-plan`.
