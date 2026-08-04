@@ -3,18 +3,10 @@ import {
   canGoPrevious,
   goNext,
   goPrevious,
-  remainingCount,
   type QueueState,
 } from '../../src/domain/mockQueue';
 
 describe('mockQueue', () => {
-  test('remainingCount reflects total minus the current position', () => {
-    const state: QueueState = { currentIndex: 0, total: 5 };
-    expect(remainingCount(state)).toBe(5);
-    expect(remainingCount({ currentIndex: 1, total: 5 })).toBe(4);
-    expect(remainingCount({ currentIndex: 4, total: 5 })).toBe(1);
-  });
-
   test('canGoPrevious is false on the first card, true otherwise', () => {
     expect(canGoPrevious({ currentIndex: 0, total: 5 })).toBe(false);
     expect(canGoPrevious({ currentIndex: 1, total: 5 })).toBe(true);

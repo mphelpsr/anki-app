@@ -20,7 +20,3 @@ export function goPrevious(state: QueueState): QueueState {
   if (!canGoPrevious(state)) return state;
   return { ...state, currentIndex: state.currentIndex - 1 };
 }
-
-export function remainingCount(state: QueueState): number {
-  return state.total - state.currentIndex;
-}

@@ -6,19 +6,21 @@ import {
   canGoPrevious,
   goNext,
   goPrevious,
-  remainingCount,
   type QueueState,
 } from '../../domain/mockQueue';
-import { studyQueue } from '../../mocks/studyQueue';
+import { dueTodayCount, levelProgress } from '../../domain/mastery';
+import { CURRENT_LEVEL, studyQueue } from '../../mocks/studyQueue';
+import { DueTodayBadge } from './DueTodayBadge';
+import { LevelProgress } from './LevelProgress';
 import { NavArrows } from './NavArrows';
-import { RemainingCounter } from './RemainingCounter';
 import { RevealButton } from './RevealButton';
 import { SentenceReveal } from './SentenceReveal';
 import { WordImage } from './WordImage';
 
 /**
- * Composição dos 5 elementos em escopo de
- * specs/002-mvp1-card-screen/spec.md, contra a fila mock local.
+ * Composição dos elementos em escopo de
+ * specs/002-mvp1-card-screen/spec.md, com o Elemento 1 redefinido por
+ * specs/003-cefr-progress-counter/spec.md, contra a fila mock local.
  */
 export function StudyCardScreen() {
   const [queueState, setQueueState] = useState<QueueState>({
@@ -28,6 +30,8 @@ export function StudyCardScreen() {
   const [revealed, setRevealed] = useState(false);
 
   const card = studyQueue[queueState.currentIndex];
+  const progress = levelProgress(studyQueue, CURRENT_LEVEL);
+  const dueToday = dueTodayCount(studyQueue, CURRENT_LEVEL, Date.now());
 
   function handleNext() {
     setQueueState((state) => goNext(state));
@@ -41,7 +45,10 @@ export function StudyCardScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <RemainingCounter remaining={remainingCount(queueState)} />
+      <View style={styles.header}>
+        <LevelProgress percentage={progress} level={CURRENT_LEVEL} />
+        <DueTodayBadge count={dueToday} />
+      </View>
       <View style={styles.card}>
         <View style={styles.content}>
           <WordImage emoji={card.emoji} />
@@ -70,6 +77,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#e9e6df',
+  },
+  header: {
+    marginTop: 16,
+    marginBottom: 8,
   },
   card: {
     flex: 1,
