@@ -1,13 +1,24 @@
 <!--
 Relatório de Impacto de Sincronização
+- Mudança de versão: 1.0.0 → 1.1.0 (adição de princípio de escrita)
+- Princípios modificados: n/a
+- Seções adicionadas: "Fluxo de Desenvolvimento" ganhou a exigência de
+  EARS + BDD para requisitos e cenários de aceitação
+- Seções removidas: nenhuma
+- Templates que exigem acompanhamento: nenhum — a exigência vale a partir
+  desta emenda; specs anteriores (001) não são retroativamente
+  invalidadas, mas devem migrar para este formato na próxima revisão.
+- TODOs adiados: retrofit de specs/001-flashcard-study-loop/spec.md para
+  EARS + BDD, a fazer sob demanda.
+
+---
+
+Relatório de Impacto de Sincronização (histórico)
 - Mudança de versão: [TEMPLATE] → 1.0.0 (ratificação inicial)
 - Princípios modificados: n/a (primeira versão)
 - Seções adicionadas: Princípios Fundamentais (I-V), Restrições de
   Tecnologia e Dados, Fluxo de Desenvolvimento, Governança
 - Seções removidas: nenhuma
-- Templates que exigem acompanhamento: nenhum — os templates de
-  plan/spec/tasks consomem este arquivo em tempo de execução e não
-  precisam de edição para esta ratificação.
 - TODOs adiados: nenhum
 -->
 
@@ -100,6 +111,19 @@ prefira um JSON/SQLite local semeado a um sistema de plugins genérico.
   validar que os fluxos centrais (lista de decks → sessão de estudo →
   avaliação → atualização da data de vencimento) parecem equivalentes, não
   para justificar copiar a UI literalmente.
+- **Requisitos funcionais em `spec.md` DEVEM ser escritos em sintaxe
+  EARS** (Easy Approach to Requirements Syntax): Onipresente ("O sistema
+  DEVE..."), Orientado a evento ("Quando \<gatilho\>, o sistema DEVE..."),
+  Orientado a estado ("Enquanto \<estado\>, o sistema DEVE..."),
+  Comportamento indesejado ("Se \<condição\>, então o sistema DEVE..."),
+  Funcionalidade opcional ("Onde \<funcionalidade\>, o sistema DEVE...")
+  ou a forma Complexa (combinação das anteriores). Frases vagas com
+  "deveria" ou sem gatilho/condição explícita não satisfazem este
+  requisito.
+- **Cenários de aceitação DEVEM ser escritos em BDD/Gherkin** (`Cenário:`
+  com blocos `Dado` / `Quando` / `Então`, `E` para continuação), um
+  cenário por comportamento observável, em vez de prosa livre. Cada
+  cenário deve ser executável como teste de integração/E2E sem reescrita.
 
 ## Governança
 
@@ -116,4 +140,4 @@ Princípios Fundamentais acima; violações não resolvidas devem ser
 justificadas na seção de Rastreamento de Complexidade do plano, ou o plano
 é rejeitado.
 
-**Versão**: 1.0.0 | **Ratificada em**: 2026-08-04 | **Última Emenda**: 2026-08-04
+**Versão**: 1.1.0 | **Ratificada em**: 2026-08-04 | **Última Emenda**: 2026-08-04
