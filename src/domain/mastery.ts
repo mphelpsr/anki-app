@@ -3,7 +3,7 @@ export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 export interface MasteryCard {
   cefrLevel: CefrLevel;
   repetitions: number;
-  intervalDays: number;
+  intervalMinutes: number;
   nextDueAt: number;
 }
 
@@ -13,10 +13,10 @@ export interface MasteryCard {
  * recalibrável quando o agendador SM-2 real (001) estiver em uso.
  */
 const MASTERY_MIN_REPETITIONS = 3;
-const MASTERY_MIN_INTERVAL_DAYS = 21;
+const MASTERY_MIN_INTERVAL_MINUTES = 21 * 24 * 60; // 21 dias
 
 export function isMastered(card: MasteryCard): boolean {
-  return card.repetitions >= MASTERY_MIN_REPETITIONS && card.intervalDays >= MASTERY_MIN_INTERVAL_DAYS;
+  return card.repetitions >= MASTERY_MIN_REPETITIONS && card.intervalMinutes >= MASTERY_MIN_INTERVAL_MINUTES;
 }
 
 /** Percentual (0-100) de cartas do nível dado consideradas dominadas. */

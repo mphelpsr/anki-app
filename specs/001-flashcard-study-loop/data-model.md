@@ -32,34 +32,40 @@ Um item de estudo único pertencente a um Deck (spec: Entidades Principais
 | `front` | text | A palavra (pergunta) |
 | `back` | text | Definição/exemplo/tradução (resposta) |
 | `sourceRef` | text | Rastreabilidade até a entrada no dataset semente (Princípio IV da Constituição) |
-| `repetitions` | integer | Contagem de revisões bem-sucedidas consecutivas (nota ≥ 2); estado do SM-2 |
-| `easeFactor` | real | Fator de facilidade do SM-2; começa em 2,5, piso 1,30 |
-| `intervalDays` | integer | Intervalo atual em dias; começa em 0 (novo/nunca revisado) |
+| `repetitions` | integer | 0 = carta nova/em relearning; >=1 = graduada. Estado do agendador de duas fases |
+| `easeFactor` | real | Fator de facilidade; começa em 2,5, piso 1,30 |
+| `intervalMinutes` | integer | Intervalo atual em minutos (não mais dias — ver nota de sincronização de `004-recall-grading` em [contracts/scheduler-contract.md](./contracts/scheduler-contract.md)); começa em 0 (novo/nunca revisado) |
 | `nextDueAt` | integer (unix ms) | Quando o card se torna devido; cards novos têm padrão "agora", ficando imediatamente devidos (Caso de Borda da spec: primeiro lançamento) |
 | `lastReviewedAt` | integer (unix ms), anulável | Nulo até a primeira revisão |
 
 **Regras de validação**: `front`/`back` não vazios; `easeFactor >= 1,30`;
-`intervalDays >= 0`; um Card com `lastReviewedAt = null` DEVE ter
-`repetitions = 0` e `intervalDays = 0`.
+`intervalMinutes >= 0`; um Card com `lastReviewedAt = null` DEVE ter
+`repetitions = 0` e `intervalMinutes = 0`.
 
 **Transições de estado** (conduzidas pelo agendador em
 `src/domain/scheduler.ts`, que recebe uma Nota e os campos de agendamento
 atuais do Card, produzindo os próximos `repetitions` / `easeFactor` /
-`intervalDays` / `nextDueAt` — ver
+`intervalMinutes` / `nextDueAt` — ver
 [contracts/scheduler-contract.md](./contracts/scheduler-contract.md)):
 
 ```text
-Novo (repetitions=0, nunca revisado)
-   --nota 0--> Aprendendo, interval=1 dia, repetitions=0, ease -0,20
-   --nota 1--> Aprendendo, interval=1 dia, repetitions=1, ease -0,15
-   --nota 2/3--> Aprendendo, interval=1 dia, repetitions=1, ease inalterado/+0,15
+Fase de aprendizagem (repetitions=0: novo ou em relearning)
+   --Again--> permanece, interval=1 min, repetitions=0, ease -0,20
+   --Hard--> permanece, interval=10 min, repetitions=0, ease -0,15
+   --Good--> gradua: interval=1 dia (1440 min), repetitions=1, ease inalterado
+   --Easy--> gradua: interval=4 dias (5760 min), repetitions=1, ease +0,15
 
-Aprendendo/Revisão (repetitions>=1)
-   --nota 0--> reinicia: repetitions=0, interval=1 dia, ease -0,20 (piso 1,30)
-   --nota 1/2/3--> repetitions+1, interval=round(intervalAnterior * easeFactor)
-                     (exceto repetitions 1→2, que usa intervalo fixo de 6 dias, conforme SM-2),
-                     ease ajustado conforme a nota
+Fase graduada (repetitions>=1)
+   --Again--> lapso, volta à fase de aprendizagem: repetitions=0, interval=1 min, ease -0,20 (piso 1,30)
+   --Hard--> repetitions+1, interval=round(intervalAnteriorEmDias * 1,2) em dias, ease -0,15
+   --Good--> repetitions+1, interval=round(intervalAnteriorEmDias * easeFactor) em dias, ease inalterado
+   --Easy--> repetitions+1, interval=round(intervalAnteriorEmDias * easeFactor * 1,3) em dias, ease +0,15
 ```
+
+O multiplicador de Hard é fixo (1,2), não o `easeFactor`, para garantir que
+Hard produza sempre um intervalo menor que Good — se ambos usassem
+`easeFactor`, ficariam idênticos e a UI não teria como diferenciá-los
+(bug encontrado e corrigido durante `004-recall-grading`).
 
 ## Review (Revisão)
 
@@ -72,8 +78,8 @@ Review).
 | `cardId` | text | Chave estrangeira → Card.id |
 | `grade` | integer (0-3) | A nota de lembrança dada |
 | `reviewedAt` | integer (unix ms) | Quando a nota foi registrada |
-| `intervalBefore` | integer | `intervalDays` do card imediatamente antes desta revisão (para verificação SC-004 / depuração) |
-| `intervalAfter` | integer | `intervalDays` do card imediatamente depois desta revisão |
+| `intervalBefore` | integer | `intervalMinutes` do card imediatamente antes desta revisão (para verificação SC-004 / depuração) |
+| `intervalAfter` | integer | `intervalMinutes` do card imediatamente depois desta revisão |
 
 **Regras de validação**: `grade` em `{0,1,2,3}`; uma Review é
 append-only — nunca atualizada ou excluída, atendendo ao FR-004
@@ -92,7 +98,7 @@ spec).
   avaliado fora do BD, então fechar o app no meio da sessão simplesmente
   deixa o `nextDueAt` intocado para o card não avaliado.
 - SC-003/SC-004 (diferenças mensuráveis de intervalo / crescimento):
-  diretamente verificáveis lendo `Card.intervalDays` e
+  diretamente verificáveis lendo `Card.intervalMinutes` e
   `Review.intervalAfter` antes/depois de avaliar, que é exatamente o que
   `tests/unit/scheduler.test.ts` verifica contra a função pura — sem
   necessidade de BD para essa prova.

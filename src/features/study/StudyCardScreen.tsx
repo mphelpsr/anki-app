@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   canGoNext,
@@ -9,29 +9,35 @@ import {
   type QueueState,
 } from '../../domain/mockQueue';
 import { dueTodayCount, levelProgress } from '../../domain/mastery';
-import { CURRENT_LEVEL, studyQueue } from '../../mocks/studyQueue';
+import { scheduleNextReview, type Grade } from '../../domain/scheduler';
+import { CURRENT_LEVEL, studyQueue, type StudyCardMock } from '../../mocks/studyQueue';
 import { DueTodayBadge } from './DueTodayBadge';
+import { GradeButtons } from './GradeButtons';
 import { LevelProgress } from './LevelProgress';
 import { NavArrows } from './NavArrows';
 import { RevealButton } from './RevealButton';
 import { SentenceReveal } from './SentenceReveal';
+import { TranslationLine } from './TranslationLine';
 import { WordImage } from './WordImage';
 
 /**
  * Composição dos elementos em escopo de
  * specs/002-mvp1-card-screen/spec.md, com o Elemento 1 redefinido por
- * specs/003-cefr-progress-counter/spec.md, contra a fila mock local.
+ * specs/003-cefr-progress-counter/spec.md e o pós-revelação (tradução +
+ * avaliação real) definido por specs/004-recall-grading/spec.md.
  */
 export function StudyCardScreen() {
+  const [cards, setCards] = useState<StudyCardMock[]>(studyQueue);
   const [queueState, setQueueState] = useState<QueueState>({
     currentIndex: 0,
-    total: studyQueue.length,
+    total: cards.length,
   });
   const [revealed, setRevealed] = useState(false);
+  const [sessionComplete, setSessionComplete] = useState(false);
 
-  const card = studyQueue[queueState.currentIndex];
-  const progress = levelProgress(studyQueue, CURRENT_LEVEL);
-  const dueToday = dueTodayCount(studyQueue, CURRENT_LEVEL, Date.now());
+  const card = cards[queueState.currentIndex];
+  const progress = levelProgress(cards, CURRENT_LEVEL);
+  const dueToday = dueTodayCount(cards, CURRENT_LEVEL, Date.now());
 
   function handleNext() {
     setQueueState((state) => goNext(state));
@@ -43,6 +49,21 @@ export function StudyCardScreen() {
     setRevealed(false);
   }
 
+  function handleGrade(grade: Grade) {
+    const now = Date.now();
+    const currentIndex = queueState.currentIndex;
+    const result = scheduleNextReview(cards[currentIndex], grade, now);
+
+    setCards((previous) => previous.map((c, i) => (i === currentIndex ? { ...c, ...result } : c)));
+
+    if (canGoNext(queueState)) {
+      setQueueState((state) => goNext(state));
+      setRevealed(false);
+    } else {
+      setSessionComplete(true);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -50,24 +71,43 @@ export function StudyCardScreen() {
         <DueTodayBadge count={dueToday} />
       </View>
       <View style={styles.card}>
-        <View style={styles.content}>
-          <WordImage emoji={card.emoji} />
-          <SentenceReveal
-            sentenceBefore={card.sentenceBefore}
-            word={card.word}
-            sentenceAfter={card.sentenceAfter}
-            revealed={revealed}
-          />
-        </View>
-        <View style={styles.controls}>
-          <RevealButton revealed={revealed} onReveal={() => setRevealed(true)} />
-          <NavArrows
-            canGoPrevious={canGoPrevious(queueState)}
-            canGoNext={canGoNext(queueState)}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-          />
-        </View>
+        {sessionComplete ? (
+          <View style={styles.completeState} testID="session-complete">
+            <Text style={styles.completeText}>Sessão concluída!</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.content}>
+              <WordImage emoji={card.emoji} />
+              <SentenceReveal
+                sentenceBefore={card.sentenceBefore}
+                word={card.word}
+                sentenceAfter={card.sentenceAfter}
+                revealed={revealed}
+              />
+              {revealed && (
+                <TranslationLine
+                  before={card.translationBefore}
+                  word={card.translatedWord}
+                  after={card.translationAfter}
+                />
+              )}
+            </View>
+            <View style={styles.controls}>
+              {revealed ? (
+                <GradeButtons cardState={card} now={Date.now()} onGrade={handleGrade} />
+              ) : (
+                <RevealButton revealed={revealed} onReveal={() => setRevealed(true)} />
+              )}
+              <NavArrows
+                canGoPrevious={canGoPrevious(queueState)}
+                canGoNext={canGoNext(queueState)}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+              />
+            </View>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -103,5 +143,15 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     gap: 16,
+  },
+  completeState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completeText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2c2c2c',
   },
 });

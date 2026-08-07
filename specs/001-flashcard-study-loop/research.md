@@ -2,22 +2,22 @@
 
 ## Algoritmo de agendamento
 
-**Decisão**: Implementar o SM-2 (SuperMemo 2) com o mapeamento padrão de
-quatro notas usado pela maioria dos apps de SRS modernos (incluindo o
-benchmark):
+**Decisão** (atualizada por `004-recall-grading` — ver nota de
+sincronização em
+[contracts/scheduler-contract.md](./contracts/scheduler-contract.md)):
+duas fases. Cartas novas ou que acabaram de levar "Again" ficam em uma
+fase de **aprendizagem** com passos curtos em minutos (Again → 1 min,
+Hard → 10 min, Good → gradua com 1 dia, Easy → gradua direto com 4 dias).
+Uma vez graduada (`repetitions >= 1`), a carta passa a crescer em dias
+via SM-2 clássico (intervalo × fator de facilidade), e "Again" nessa fase
+é tratado como lapso — volta para a fase de aprendizagem, não para "1
+dia".
 
-- Nota 0 "não lembrei" → reinicia repetições para 0, intervalo para 1
-  dia, reduz o fator de facilidade em 0,20 (piso 1,30).
-- Nota 1 "lembrei com dificuldade" → intervalo cresce devagar, fator de
-  facilidade reduz em 0,15.
-- Nota 2 "lembrei" → crescimento padrão do SM-2 (intervalo × fator de
-  facilidade), facilidade inalterada.
-- Nota 3 "lembrei facilmente" → crescimento padrão do SM-2, fator de
-  facilidade aumenta em 0,15.
-
-As duas primeiras repetições bem-sucedidas usam intervalos fixos (1 dia,
-depois 6 dias) antes que o multiplicador de fator de facilidade assuma o
-controle, conforme o SM-2 original.
+O motivo da mudança em relação à primeira versão desta decisão (só em
+dias, Again = 1 dia) foi um pedido explícito: o botão "Again" precisa
+trazer a mesma carta de volta em questão de segundos/minutos dentro da
+mesma sessão, não no dia seguinte — o que uma escala só-em-dias não
+consegue expressar.
 
 **Racional**: O SM-2 é simples o suficiente para implementar como uma
 pequena função pura, bem documentado, produz exatamente o comportamento

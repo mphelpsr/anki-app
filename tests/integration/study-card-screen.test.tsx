@@ -7,8 +7,8 @@ import { CURRENT_LEVEL, studyQueue } from '../../src/mocks/studyQueue';
 const expectedProgress = levelProgress(studyQueue, CURRENT_LEVEL);
 const expectedDueToday = dueTodayCount(studyQueue, CURRENT_LEVEL, Date.now());
 
-describe('StudyCardScreen — História de Usuário 1 (ver e revelar)', () => {
-  test('exibe a carta com a palavra oculta e o botão Revelar visível', async () => {
+describe('StudyCardScreen — História de Usuário 1 de 002 (ver e revelar)', () => {
+  test('exibe a carta com a palavra oculta e o botão Reveal visível', async () => {
     await render(<StudyCardScreen />);
     const first = studyQueue[0];
     expect(screen.getByTestId('word-image')).toBeTruthy();
@@ -16,7 +16,7 @@ describe('StudyCardScreen — História de Usuário 1 (ver e revelar)', () => {
     expect(screen.getByTestId('reveal-button')).toBeTruthy();
   });
 
-  test('revela a palavra ao tocar em Revelar e some com o botão', async () => {
+  test('revela a palavra ao tocar em Reveal e some com o botão', async () => {
     await render(<StudyCardScreen />);
     const first = studyQueue[0];
     await fireEvent.press(screen.getByTestId('reveal-button'));
@@ -25,7 +25,7 @@ describe('StudyCardScreen — História de Usuário 1 (ver e revelar)', () => {
   });
 });
 
-describe('StudyCardScreen — História de Usuário 2 (navegar entre cartas)', () => {
+describe('StudyCardScreen — História de Usuário 2 de 002 (navegar entre cartas)', () => {
   test('avança para a próxima carta e oculta a palavra novamente', async () => {
     await render(<StudyCardScreen />);
     await fireEvent.press(screen.getByTestId('reveal-button'));
@@ -82,5 +82,50 @@ describe('StudyCardScreen — História de Usuário 2 de 003 (badge de pendênci
     const progressStyle = StyleSheet.flatten(screen.getByTestId('level-progress').props.style);
     const badgeStyle = StyleSheet.flatten(screen.getByTestId('due-today-badge').props.style);
     expect(badgeStyle.fontSize).toBeLessThan(progressStyle.fontSize);
+  });
+});
+
+describe('StudyCardScreen — História de Usuário 1 de 004 (avaliação com tempo real)', () => {
+  test('os 4 botões de avaliação aparecem no lugar de Reveal', async () => {
+    await render(<StudyCardScreen />);
+    await fireEvent.press(screen.getByTestId('reveal-button'));
+
+    expect(screen.queryByTestId('reveal-button')).toBeNull();
+    expect(screen.getByTestId('grade-again')).toBeTruthy();
+    expect(screen.getByTestId('grade-hard')).toBeTruthy();
+    expect(screen.getByTestId('grade-good')).toBeTruthy();
+    expect(screen.getByTestId('grade-easy')).toBeTruthy();
+  });
+
+  test('avaliar avança para a próxima carta e reoculta a palavra', async () => {
+    await render(<StudyCardScreen />);
+    await fireEvent.press(screen.getByTestId('reveal-button'));
+    await fireEvent.press(screen.getByTestId('grade-good'));
+
+    expect(screen.getByTestId('sentence-target').props.children).not.toBe(studyQueue[1].word);
+    expect(screen.getByTestId('reveal-button')).toBeTruthy();
+  });
+
+  test('avaliar a última carta encerra a sessão', async () => {
+    await render(<StudyCardScreen />);
+    for (let i = 0; i < studyQueue.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await fireEvent.press(screen.getByTestId('reveal-button'));
+      // eslint-disable-next-line no-await-in-loop
+      await fireEvent.press(screen.getByTestId('grade-good'));
+    }
+
+    expect(screen.getByTestId('session-complete')).toBeTruthy();
+  });
+});
+
+describe('StudyCardScreen — História de Usuário 2 de 004 (tradução ao revelar)', () => {
+  test('a tradução em português aparece junto da revelação', async () => {
+    await render(<StudyCardScreen />);
+    const first = studyQueue[0];
+    await fireEvent.press(screen.getByTestId('reveal-button'));
+
+    const translation = screen.getByTestId('translation-line');
+    expect(translation.props.children[1].props.children).toBe(first.translatedWord);
   });
 });
