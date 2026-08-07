@@ -1,5 +1,19 @@
 # Especificação da Funcionalidade: Tela de Estudo — Card Mínimo (MVP1 Front-end)
 
+<!--
+Nota de revisão (2026-08-04, após observação de outros apps de SRS):
+a palavra-alvo em inglês NÃO é mais ocultada até "Revelar"/"Reveal" — ela
+é exibida em destaque (negrito + sublinhado) desde a primeira renderização
+da carta. O que "Reveal" controla agora é a tradução e os botões de
+avaliação (ver specs/004-recall-grading/spec.md). Motivo: nos apps de
+referência observados, o que se testa é o reconhecimento do
+significado/tradução de uma palavra já visível em contexto, não a
+produção da palavra a partir de um espaço em branco. FR-003, FR-005,
+FR-010, SC-002 e a seção de Entidades abaixo foram atualizados; FR-004 e
+o Caso de Borda de idempotência de "Revelar" permanecem válidos, agora
+aplicados à tradução/avaliação em vez da palavra.
+-->
+
 **Branch da Feature**: `002-mvp1-card-screen`
 
 **Criada em**: 2026-08-04
@@ -27,20 +41,23 @@ recall).
 ### História de Usuário 1 - Ver e revelar o card de estudo (Prioridade: P1)
 
 Um aprendiz abre a tela de estudo e vê, no topo, quantas cartas restam na
-fila atual. Abaixo, vê a imagem que ilustra a palavra da carta atual e uma
-frase em inglês usando essa palavra — mas com a palavra oculta por um
-sublinhado. Ao tocar em "Revelar", o sublinhado dá lugar à palavra em
-inglês, ainda sublinhada, dentro da própria frase.
+fila atual. Abaixo, vê a imagem que ilustra a palavra da carta atual e a
+frase completa em inglês usando essa palavra, com a palavra-alvo já
+visível e em destaque (negrito + sublinhado) — não é preciso adivinhar
+nada para ver a frase. Ao tocar em "Reveal", a frase em inglês permanece
+como está (serve de referência) e é a tradução que passa a aparecer (ver
+`004-recall-grading/spec.md`).
 
 **Por que essa prioridade**: É o núcleo visual do produto — sem isso não
-há nada para "começar o front-end". Corresponde diretamente aos
-Cenários de Aceitação 1 e 2 da História 1 em `001-flashcard-study-loop`
-(mostrar frente, revelar resposta), mas isolado da lógica de avaliação e
-agendamento, que ainda não está implementada.
+há nada para "começar o front-end". Corresponde à experiência de
+reconhecimento (ver a palavra em contexto, testar se você sabe o
+significado) comum em apps de SRS de referência, isolada da lógica de
+avaliação e agendamento completas, que ainda não estavam implementadas
+quando esta fatia nasceu.
 
-**Teste Independente**: Com uma fila mock de 2-3 cartas, abrir a tela,
-conferir que a palavra está oculta na frase, tocar "Revelar" e confirmar
-que a palavra aparece sublinhada no lugar certo da frase.
+**Teste Independente**: Com uma fila mock de 2-3 cartas, abrir a tela e
+conferir que a palavra-alvo já aparece em destaque na frase, sem nenhuma
+interação necessária.
 
 **Cenários de Aceitação** (BDD):
 
@@ -50,17 +67,16 @@ Cenário: Contagem de cartas restantes ao abrir a tela
   Quando o aprendiz abre a tela de estudo
   Então o sistema deve exibir "5 cartas restantes" no topo da tela
 
-Cenário: Card exibido com a palavra oculta
-  Dado que o aprendiz está vendo uma carta que ainda não foi revelada
+Cenário: Card exibido com a palavra-alvo já em destaque
+  Dado que o aprendiz está vendo uma carta pela primeira vez
   Então a imagem referente à palavra da carta deve estar visível
-  E a frase deve mostrar um espaço sublinhado no lugar da palavra em inglês
-  E o botão "Revelar" deve estar visível e habilitado
+  E a frase completa em inglês deve estar visível, com a palavra-alvo em negrito e sublinhada
+  E o botão "Reveal" deve estar visível e habilitado
 
-Cenário: Revelar a palavra da carta atual
-  Dado que o aprendiz está vendo uma carta com a palavra oculta
-  Quando o aprendiz toca no botão "Revelar"
-  Então a frase deve mostrar a palavra em inglês no lugar do espaço em branco
-  E essa palavra revelada deve permanecer sublinhada
+Cenário: Tocar em Reveal não altera a frase em inglês
+  Dado que o aprendiz está vendo uma carta
+  Quando o aprendiz toca no botão "Reveal"
+  Então a frase em inglês e a palavra-alvo em destaque permanecem exatamente como estavam
 ```
 
 ---
@@ -68,8 +84,8 @@ Cenário: Revelar a palavra da carta atual
 ### História de Usuário 2 - Navegar entre as cartas da fila (Prioridade: P2)
 
 Usando duas setas (anterior/próxima), o aprendiz percorre as cartas da
-fila atual para frente e para trás, independentemente de ter revelado a
-palavra da carta atual.
+fila atual para frente e para trás, cada uma já mostrando sua própria
+palavra-alvo em destaque.
 
 **Por que essa prioridade**: Corresponde à navegação por cartas presente
 na referência (o par de setas destacado mesmo antes de revelar). Sem
@@ -77,8 +93,8 @@ avaliação/agendamento implementados ainda, essa navegação é o único jeito
 de percorrer a fila mock nesta fatia do front-end.
 
 **Independent Test**: Com uma fila mock de 3 cartas, tocar na seta direita
-duas vezes e confirmar que chega na 3ª carta com a palavra oculta
-novamente; tocar na seta esquerda e voltar para a 2ª.
+duas vezes e confirmar que chega na 3ª carta já com sua própria palavra em
+destaque; tocar na seta esquerda e voltar para a 2ª.
 
 **Cenários de Aceitação** (BDD):
 
@@ -88,7 +104,7 @@ Cenário: Avançar para a próxima carta
   Quando o aprendiz toca na seta direita
   Então o sistema deve exibir a carta 3
   E a contagem de cartas restantes deve refletir a nova posição
-  E a palavra da carta 3 deve estar oculta, independentemente de a carta 2 ter sido revelada
+  E a palavra-alvo da carta 3 deve estar visível em destaque, independentemente do estado de avaliação da carta 2
 
 Cenário: Retroceder para a carta anterior
   Dado que o aprendiz está na carta 3 de 5 da fila
@@ -112,13 +128,15 @@ Cenário: Seta direita desabilitada na última carta
   nesta fatia — a tela assume uma fila não vazia fornecida por dados mock
   (ver Suposições). O estado de fila vazia real é tratado pela spec 001
   (FR-009/FR-010).
-- O que acontece ao navegar para uma carta diferente antes de revelar a
-  atual? A palavra não revelada não "vaza" para a próxima carta — cada
-  carta controla seu próprio estado de revelado/oculto, reiniciado ao
-  entrar na tela.
-- O que acontece se o aprendiz tocar "Revelar" mais de uma vez na mesma
-  carta? Não deve haver efeito colateral — a palavra permanece revelada
-  (idempotente).
+- O que acontece ao navegar para uma carta diferente antes de tocar em
+  "Reveal" na atual? A tradução exibida (se houver) não "vaza" para a
+  próxima carta — cada carta controla seu próprio estado de
+  tradução/avaliação visível, reiniciado ao entrar na tela. A frase em
+  inglês da nova carta é sempre exibida imediatamente, sem depender desse
+  estado.
+- O que acontece se o aprendiz tocar "Reveal" mais de uma vez na mesma
+  carta? Não deve haver efeito colateral — o estado revelado permanece
+  (idempotente); a frase em inglês nunca muda de qualquer forma.
 
 ## Requisitos *(obrigatório)*
 
@@ -128,18 +146,21 @@ Cenário: Seta direita desabilitada na última carta
   tela de estudo, a quantidade de cartas restantes na fila atual.
 - **FR-002** (Onipresente): O sistema DEVE exibir, para a carta atual, a
   imagem que referencia a palavra dessa carta.
-- **FR-003** (Estado): ENQUANTO a palavra da carta atual não tiver sido
-  revelada, o sistema DEVE exibir um espaço sublinhado no lugar exato da
-  palavra dentro da frase de exemplo.
-- **FR-004** (Estado): ENQUANTO a palavra da carta atual não tiver sido
-  revelada, o sistema DEVE exibir o botão "Revelar" em estado habilitado.
-- **FR-005** (Evento): QUANDO o aprendiz tocar no botão "Revelar", o
-  sistema DEVE substituir o espaço sublinhado da frase pela palavra em
-  inglês da carta, mantendo-a sublinhada.
+- **FR-003** (Onipresente): O sistema DEVE exibir a frase completa em
+  inglês com a palavra-alvo sempre em destaque (negrito + sublinhado),
+  desde a primeira renderização da carta — nunca oculta por um espaço em
+  branco.
+- **FR-004** (Estado): ENQUANTO o aprendiz não tiver tocado em "Reveal"
+  para a carta atual, o sistema DEVE exibir o botão "Reveal" em estado
+  habilitado.
+- **FR-005** (Evento): QUANDO o aprendiz tocar no botão "Reveal", o
+  sistema NÃO DEVE alterar a frase em inglês nem a palavra-alvo em
+  destaque — apenas passa a exibir a tradução e as opções de avaliação
+  (ver `004-recall-grading/spec.md`).
 - **FR-006** (Evento): QUANDO o aprendiz tocar na seta direita e existir
   uma próxima carta na fila, o sistema DEVE exibir essa próxima carta com
-  a palavra oculta, independentemente do estado de revelado da carta
-  anterior.
+  sua própria palavra-alvo já em destaque, independentemente do estado de
+  avaliação da carta anterior.
 - **FR-007** (Evento): QUANDO o aprendiz tocar na seta esquerda e existir
   uma carta anterior na fila, o sistema DEVE exibir essa carta anterior.
 - **FR-008** (Estado): ENQUANTO a carta atual for a primeira da fila, o
@@ -147,9 +168,9 @@ Cenário: Seta direita desabilitada na última carta
 - **FR-009** (Estado): ENQUANTO a carta atual for a última da fila, o
   sistema DEVE exibir a seta direita em estado desabilitado.
 - **FR-010** (Comportamento indesejado): SE o aprendiz tocar no botão
-  "Revelar" quando a palavra já estiver revelada, ENTÃO o sistema NÃO
-  DEVE alterar o estado da carta (ação idempotente, sem efeito colateral
-  visível).
+  "Reveal" mais de uma vez para a mesma carta, ENTÃO o sistema NÃO DEVE
+  produzir nenhum efeito colateral adicional (ação idempotente) — a frase
+  em inglês, em particular, nunca é afetada por "Reveal".
 
 ### Fora de Escopo Explícito
 
@@ -165,10 +186,9 @@ tradução para português da frase; ícones de dicionário, nota, áudio
 
 - **Carta de Estudo (mock)**: unidade exibida na tela, com uma imagem, uma
   frase contendo a palavra-alvo em inglês e a posição/índice dela dentro
-  da frase (para saber onde inserir o sublinhado/a palavra revelada).
-  Nesta fatia, vem de um conjunto de dados mock local, não do pipeline de
-  conteúdo real nem do banco SQLite (esses ainda não existem no
-  código-fonte).
+  da frase (para saber onde aplicar o destaque). Nesta fatia, vem de um
+  conjunto de dados mock local, não do pipeline de conteúdo real nem do
+  banco SQLite (esses ainda não existem no código-fonte).
 - **Fila de Estudo (mock)**: lista ordenada de Cartas de Estudo e um
   índice da carta atual, controlando a contagem de "restantes" e a
   habilitação das setas.
@@ -179,10 +199,11 @@ tradução para português da frase; ícones de dicionário, nota, áudio
 
 - **SC-001**: Um observador consegue, olhando a tela sem explicação
   prévia, identificar corretamente os 5 elementos (contador, imagem,
-  frase com sublinhado, botão Revelar, setas) e sua função, comparando
-  lado a lado com a referência visual fornecida.
-- **SC-002**: Em 100% das cartas da fila mock, tocar "Revelar" substitui
-  o sublinhado pela palavra correta, sem afetar o restante da frase.
+  frase com a palavra em destaque, botão Reveal, setas) e sua função,
+  comparando lado a lado com a referência visual fornecida.
+- **SC-002**: Em 100% das cartas da fila mock, a palavra-alvo aparece
+  corretamente em destaque desde a primeira renderização, e tocar
+  "Reveal" nunca altera a frase em inglês.
 - **SC-003**: A navegação entre cartas (setas) nunca deixa a tela em um
   estado sem carta visível ou com a contagem de restantes inconsistente
   com a posição atual.
@@ -194,10 +215,10 @@ tradução para português da frase; ícones de dicionário, nota, áudio
   esses ainda não foram implementados (ver `001-flashcard-study-loop/
   tasks.md`, Fase 2). Esta funcionalidade existe para destravar o
   front-end antes da camada de dados real estar pronta.
-- "Revelar" aqui é puramente visual (troca de texto na frase); não grava
-  avaliação, não chama o agendador SM-2 e não persiste nada — isso
-  permanece definido pela spec 001 e será conectado em um incremento
-  posterior.
+- A palavra-alvo em inglês é sempre visível desde o início — o teste de
+  memorização é sobre reconhecer o significado (tradução), não sobre
+  produzir a palavra a partir de um espaço em branco. "Reveal" controla a
+  tradução e a avaliação (`004-recall-grading`), não a frase em inglês.
 - A imagem referente à palavra é um asset de placeholder (ilustração
   genérica ou bloco estilizado), já que o pipeline de conteúdo real e a
   fonte das ilustrações (Oxford ou geradas) ainda não foram definidos.

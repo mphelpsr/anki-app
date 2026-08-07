@@ -83,7 +83,6 @@ export function StudyCardScreen() {
                 sentenceBefore={card.sentenceBefore}
                 word={card.word}
                 sentenceAfter={card.sentenceAfter}
-                revealed={revealed}
               />
               {revealed && (
                 <TranslationLine

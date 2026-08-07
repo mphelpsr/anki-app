@@ -4,24 +4,23 @@ interface Props {
   sentenceBefore: string;
   word: string;
   sentenceAfter: string;
-  revealed: boolean;
 }
 
 /**
- * Elemento 3: frase com a palavra oculta por sublinhado até ser
- * revelada (FR-003, FR-005).
+ * Elemento 3: frase completa em inglês, com a palavra-alvo sempre
+ * visível e em destaque (negrito + sublinhado) desde o início — não é
+ * mais ocultada até "Reveal" (revisado após observar outros apps de
+ * repetição espaçada: o que se testa é o reconhecimento do significado,
+ * não a produção da palavra). "Reveal" agora controla apenas a tradução
+ * e os botões de avaliação (ver specs/002-mvp1-card-screen/spec.md e
+ * specs/004-recall-grading/spec.md).
  */
-export function SentenceReveal({ sentenceBefore, word, sentenceAfter, revealed }: Props) {
-  const blank = '_'.repeat(Math.max(word.length, 6));
-
+export function SentenceReveal({ sentenceBefore, word, sentenceAfter }: Props) {
   return (
     <Text style={styles.sentence}>
       {sentenceBefore}
-      <Text
-        testID="sentence-target"
-        style={[styles.target, revealed && styles.revealedWord]}
-      >
-        {revealed ? word : blank}
+      <Text testID="sentence-target" style={styles.target}>
+        {word}
       </Text>
       {sentenceAfter}
     </Text>
@@ -38,8 +37,6 @@ const styles = StyleSheet.create({
   },
   target: {
     textDecorationLine: 'underline',
-  },
-  revealedWord: {
     fontWeight: '700',
   },
 });

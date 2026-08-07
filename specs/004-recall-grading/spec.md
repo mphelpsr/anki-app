@@ -36,7 +36,8 @@ Depois de tocar em "Reveal", o aprendiz vê quatro botões — Again, Hard,
 Good, Easy — cada um rotulado com quanto tempo falta até aquela carta
 voltar a aparecer, **calculado para o estado atual daquela carta
 específica**. Ao escolher um botão, a carta é reagendada de acordo e a
-tela avança para a próxima carta da fila, com a palavra oculta novamente.
+tela avança para a próxima carta da fila, já com sua própria palavra-alvo
+em destaque e aguardando um novo "Reveal".
 
 **Por que essa prioridade**: É o núcleo do pedido — sem isso, os botões
 seriam apenas decoração, e o app continuaria sem o mecanismo que
@@ -58,24 +59,24 @@ Cenário: Botões de avaliação aparecem após revelar
   E cada botão mostra um rótulo de tempo calculado para o estado atual da carta
 
 Cenário: "Again" sempre traz a carta de volta em curtíssimo prazo
-  Dado que uma carta (nova ou já graduada) está com a palavra revelada
+  Dado que uma carta (nova ou já graduada) já teve "Reveal" acionado
   Quando o aprendiz toca em "Again"
   Então o novo horário de vencimento da carta deve ser inferior a 2 minutos a partir de agora
 
 Cenário: Ordem crescente entre os quatro botões
-  Dado uma carta com a palavra revelada, em qualquer estado de repetição
+  Dado uma carta com "Reveal" já acionado, em qualquer estado de repetição
   Então o tempo mostrado em "Again" deve ser menor ou igual ao de "Hard"
   E o tempo mostrado em "Hard" deve ser menor ou igual ao de "Good"
   E o tempo mostrado em "Good" deve ser menor ou igual ao de "Easy"
 
 Cenário: Avaliar reagenda a carta e avança a sessão
-  Dado que o aprendiz está vendo a carta 1 de 4, revelada
+  Dado que o aprendiz está vendo a carta 1 de 4, com "Reveal" já acionado
   Quando o aprendiz toca em qualquer um dos quatro botões de avaliação
   Então a carta 1 recebe um novo horário de vencimento consistente com o botão escolhido
-  E a tela avança para a carta 2, com a palavra oculta novamente
+  E a tela avança para a carta 2, já com sua própria palavra-alvo em destaque
 
 Cenário: Avaliar a última carta da fila encerra a sessão
-  Dado que o aprendiz está vendo a última carta da fila, revelada
+  Dado que o aprendiz está vendo a última carta da fila, com "Reveal" já acionado
   Quando o aprendiz toca em qualquer botão de avaliação
   Então a tela deve mostrar um estado claro de "sessão concluída" (mesmo comportamento de 002-mvp1-card-screen)
 ```
@@ -84,9 +85,11 @@ Cenário: Avaliar a última carta da fila encerra a sessão
 
 ### História de Usuário 2 - Ver a tradução ao revelar (Prioridade: P2)
 
-Junto com a palavra revelada na frase em inglês, o aprendiz também vê a
-frase traduzida para português, com a palavra correspondente destacada —
-como já mostrado na referência visual original desta conversa.
+A palavra-alvo em inglês já aparece em destaque na frase desde o início
+(ver revisão de `002-mvp1-card-screen/spec.md`); ao tocar em "Reveal", o
+aprendiz passa a ver também a frase traduzida para português, com a
+palavra correspondente destacada — como já mostrado na referência visual
+original desta conversa.
 
 **Por que essa prioridade**: Ajuda a confirmar o significado da palavra,
 mas a tela já é funcional (permite estudar e avaliar) sem ela.
@@ -99,7 +102,7 @@ visualmente destacada.
 
 ```gherkin
 Cenário: Tradução aparece junto da revelação
-  Dado que o aprendiz está vendo uma carta com a palavra oculta
+  Dado que o aprendiz está vendo uma carta, com sua palavra-alvo já em destaque
   Quando o aprendiz toca em "Reveal"
   Então a frase traduzida em português deve ser exibida abaixo da frase em inglês
   E a palavra traduzida correspondente deve estar visualmente destacada
