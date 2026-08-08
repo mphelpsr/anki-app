@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { formatIntervalLong } from '../../domain/formatInterval';
 import type { Grade } from '../../domain/scheduler';
+import { GlossyLayer } from '../../ui/GlossyLayer';
+import { glossyShadowStyle } from '../../ui/glossyShadow';
 import { GRADE_COLORS, GRADE_LABELS } from './gradeStyle';
 
 interface Props {
@@ -20,8 +22,11 @@ export function GradeFeedback({ grade, intervalMinutes }: Props) {
   return (
     <View style={styles.backdrop} testID="grade-feedback">
       <View style={styles.card}>
-        <View style={[styles.badge, { backgroundColor: color }]} testID="grade-feedback-badge">
-          <Text style={styles.badgeIcon}>✓</Text>
+        <View style={[styles.badgeShadow, glossyShadowStyle(color)]}>
+          <View style={[styles.badge, { backgroundColor: color }]} testID="grade-feedback-badge">
+            <GlossyLayer color={color} />
+            <Text style={styles.badgeIcon}>✓</Text>
+          </View>
         </View>
         <Text style={styles.title}>{GRADE_LABELS[grade]}</Text>
         <Text style={styles.subtitle} testID="grade-feedback-interval">
@@ -53,13 +58,17 @@ const styles = StyleSheet.create({
     gap: 8,
     minWidth: 220,
   },
+  badgeShadow: {
+    borderRadius: 32,
+    marginBottom: 8,
+  },
   badge: {
     width: 64,
     height: 64,
     borderRadius: 32,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   badgeIcon: {
     fontSize: 28,
