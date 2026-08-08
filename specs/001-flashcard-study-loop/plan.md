@@ -119,12 +119,14 @@ tests/
     └── ingest-oxford.test.ts   # Formato/versionamento da saída do pipeline
 ```
 
-### Estrutura Real Atual (após 002-004 + SQLite real)
+### Estrutura Real Atual (após 002-004 + SQLite real + US2)
 
 ```text
 app/
 ├── _layout.tsx
-└── index.tsx                   # Tela de estudo de UM deck (o único semeado) — lista de decks (US2) ainda não existe
+├── index.tsx                   # Lista de decks (US2) — router.push para /study/[deckId]
+└── study/
+    └── [deckId].tsx             # Sessão de estudo escopada a um deck; onFinishSession -> router.back()
 
 src/
 ├── domain/
@@ -132,21 +134,24 @@ src/
 │   ├── mastery.ts                # isMastered/levelProgress/dueTodayCount (003)
 │   ├── formatInterval.ts         # Rótulos curtos e por extenso dos intervalos (004)
 │   └── mockQueue.ts              # Navegação de fila mock (002) — permanece só para os testes/telas que ainda a usam
-├── data/                         # NOVO nesta etapa
+├── data/
 │   ├── Database.ts               # Interface estrutural (execAsync/runAsync/getAllAsync/getFirstAsync)
 │   ├── schema.ts                 # SCHEMA_SQL como string (não .sql — ver research.md)
 │   ├── db.ts                     # openAppDatabase(): abre via expo-sqlite real
 │   ├── seedLoader.ts              # Semeia Deck+Cards do JSON se o BD estiver vazio
+│   ├── useAppDatabase.ts          # NOVO (US2): hook compartilhado abrir+semear, usado por DeckListScreen e StudyCardScreen
 │   └── repositories/
-│       ├── deckRepository.ts
+│       ├── deckRepository.ts      # getDeckById/listWithDueCounts (US2); getFirstDeck removido (código morto)
 │       ├── cardRepository.ts
 │       └── reviewRepository.ts
 ├── content/
 │   └── seed/
 │       └── oxford-3000-a1-a2.sample.json
 └── features/
+    ├── deckList/                 # NOVO (US2): DeckListItem.tsx + DeckListScreen.tsx
     └── study/                    # RemainingCounter foi substituído por LevelProgress+DueTodayBadge (003);
-                                   # GradeButtons/GradeFeedback/TranslationLine adicionados por 004
+                                   # GradeButtons/GradeFeedback/TranslationLine adicionados por 004;
+                                   # StudyCardScreen agora recebe deckId + onFinishSession (US2)
 
 content-pipeline/
 └── SOURCES.md                    # Proveniência do dataset de amostra atual
@@ -158,26 +163,28 @@ tests/
 │   ├── formatInterval.test.ts
 │   └── mockQueue.test.ts
 ├── integration/
-│   └── study-card-screen.test.tsx    # Reescrito para semear um BD node:sqlite real via fixture, não mais o array mock
-├── data/                          # NOVO: repositórios contra SQLite real via node:sqlite
+│   ├── study-card-screen.test.tsx    # deckId/onFinishSession explícitos via FIXTURE_DECK_ID
+│   └── deck-list-screen.test.tsx     # NOVO (US2): estados devido/em dia/vazio, onSelectDeck
+├── data/                          # Repositórios contra SQLite real via node:sqlite
 │   ├── schema.test.ts
 │   ├── seedLoader.test.ts
 │   ├── cardRepository.test.ts
 │   ├── reviewRepository.test.ts
-│   └── deckRepository.test.ts
+│   └── deckRepository.test.ts     # + getDeckById/listWithDueCounts (US2)
 └── support/
     ├── nodeSqliteDatabase.ts      # Adaptador de teste (node:sqlite) para a interface Database
     └── testDeckFixture.ts        # 4 cartas devidas com estados de progresso mistos, usadas pelo teste de integração
 
-metro.config.js                    # NOVO: registra `.wasm` como asset e cabeçalhos COOP/COEP —
+metro.config.js                    # Registra `.wasm` como asset e cabeçalhos COOP/COEP —
                                     # exigidos pelo worker WebAssembly (wa-sqlite) do expo-sqlite na web;
                                     # sem isso a tela trava em "Carregando…" (ver quickstart/T050)
 ```
 
-A lista de decks (US2, `app/index.tsx` mostrando múltiplos decks com
-contagem de devidos) permanece um gap conhecido — esta etapa foca em
-substituir o estado mock em memória por SQLite real para o único deck já
-existente, não em adicionar a navegação entre decks.
+`app/index.tsx` e `app/study/[deckId].tsx` ficam intencionalmente finos
+e sem teste unitário — não há precedente de teste de `expo-router` neste
+repo, e não compensou criar essa infraestrutura para as duas chamadas de
+navegação desta etapa (`router.push`/`router.back`). Validados manualmente
+via Playwright (T058).
 
 **Decisão de Estrutura**: Um único projeto Expo na raiz do repositório
 (Tipo de Projeto: app mobile, sem backend). O agendador e a lógica de

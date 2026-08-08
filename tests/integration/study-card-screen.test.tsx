@@ -2,16 +2,24 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { StyleSheet } from 'react-native';
 import { StudyCardScreen } from '../../src/features/study/StudyCardScreen';
 import { createNodeSqliteDatabase } from '../support/nodeSqliteDatabase';
-import { FIXTURE_CARDS, seedFixtureDatabase } from '../support/testDeckFixture';
+import { FIXTURE_CARDS, FIXTURE_DECK_ID, seedFixtureDatabase } from '../support/testDeckFixture';
 
 const expectedProgress = 50; // 2 de 4 cartas do fixture são "dominadas"
 const expectedDueToday = FIXTURE_CARDS.length; // todas as cartas do fixture estão devidas
+const noopFinishSession = () => {};
 
 /** Renderiza a tela contra um banco de teste (node:sqlite) pré-semeado, com feedback instantâneo. */
 async function renderScreen() {
   const database = createNodeSqliteDatabase();
   await seedFixtureDatabase(database);
-  await render(<StudyCardScreen feedbackDurationMs={0} database={database} />);
+  await render(
+    <StudyCardScreen
+      deckId={FIXTURE_DECK_ID}
+      onFinishSession={noopFinishSession}
+      feedbackDurationMs={0}
+      database={database}
+    />,
+  );
   await waitFor(() => {
     expect(screen.queryByTestId('study-loading')).toBeNull();
   });
@@ -135,6 +143,35 @@ describe('StudyCardScreen — História de Usuário 1 de 004 (avaliação com te
 
     expect(screen.getByTestId('session-complete')).toBeTruthy();
   });
+
+  test('sessão concluída oferece um botão para voltar aos decks (onFinishSession)', async () => {
+    const database = createNodeSqliteDatabase();
+    await seedFixtureDatabase(database);
+    const onFinishSession = jest.fn();
+    await render(
+      <StudyCardScreen
+        deckId={FIXTURE_DECK_ID}
+        onFinishSession={onFinishSession}
+        feedbackDurationMs={0}
+        database={database}
+      />,
+    );
+    await waitFor(() => expect(screen.queryByTestId('study-loading')).toBeNull());
+
+    for (let i = 0; i < FIXTURE_CARDS.length; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await fireEvent.press(screen.getByTestId('reveal-button'));
+      // eslint-disable-next-line no-await-in-loop
+      await fireEvent.press(screen.getByTestId('grade-good'));
+      // eslint-disable-next-line no-await-in-loop
+      await waitFor(() => {
+        expect(screen.queryByTestId('grade-feedback')).toBeNull();
+      });
+    }
+
+    await fireEvent.press(screen.getByTestId('back-to-decks-button'));
+    expect(onFinishSession).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('StudyCardScreen — História de Usuário 2 de 004 (tradução ao revelar)', () => {
@@ -152,7 +189,14 @@ describe('StudyCardScreen — História de Usuário 3 de 004 (feedback em popup 
   test('exibe o popup com a cor, o rótulo e o intervalo por extenso da nota escolhida', async () => {
     const database = createNodeSqliteDatabase();
     await seedFixtureDatabase(database);
-    await render(<StudyCardScreen feedbackDurationMs={50} database={database} />);
+    await render(
+      <StudyCardScreen
+        deckId={FIXTURE_DECK_ID}
+        onFinishSession={noopFinishSession}
+        feedbackDurationMs={50}
+        database={database}
+      />,
+    );
     await waitFor(() => expect(screen.queryByTestId('study-loading')).toBeNull());
 
     await fireEvent.press(screen.getByTestId('reveal-button'));
@@ -172,7 +216,14 @@ describe('StudyCardScreen — História de Usuário 3 de 004 (feedback em popup 
   test('some com o popup e mostra a próxima carta ao final do intervalo, automaticamente', async () => {
     const database = createNodeSqliteDatabase();
     await seedFixtureDatabase(database);
-    await render(<StudyCardScreen feedbackDurationMs={50} database={database} />);
+    await render(
+      <StudyCardScreen
+        deckId={FIXTURE_DECK_ID}
+        onFinishSession={noopFinishSession}
+        feedbackDurationMs={50}
+        database={database}
+      />,
+    );
     await waitFor(() => expect(screen.queryByTestId('study-loading')).toBeNull());
 
     await fireEvent.press(screen.getByTestId('reveal-button'));

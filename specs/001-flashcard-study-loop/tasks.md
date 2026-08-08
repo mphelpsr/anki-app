@@ -108,10 +108,19 @@ da implementação correspondente.
 
 ## Fase 4: História de Usuário 2 - Ver o que está devido antes de estudar (Prioridade: P2)
 
-**Status**: Não iniciada. `deckRepository.listWithDueCounts`, `useDeckList`,
-`DeckListItem` e a tela `app/index.tsx` como lista de decks (T023-T027
-originais) continuam como trabalho futuro — fora de escopo desta etapa,
-que troca a fonte de dados mas mantém a UI de deck único já existente.
+- [x] T051 [P] [US2] Testes de `deckRepository.getDeckById`/`listWithDueCounts` em `tests/data/deckRepository.test.ts` (deck único, deck sem nenhum card — FR-010, múltiplos decks com contagens independentes) — DEVEM falhar antes de T052
+- [x] T052 [US2] Implementar `getDeckById`/`listWithDueCounts` em `deckRepository.ts` (depende de T051); `getFirstDeck` removido (código morto após T056)
+- [x] T053 [P] [US2] `src/data/useAppDatabase.ts`: extrai o bootstrap "abrir DB (ou `database` injetado) + `seedIfEmpty`" que antes vivia inline em `StudyCardScreen`, para ser reaproveitado pela lista de decks
+- [x] T054 [US2] Teste `tests/integration/deck-list-screen.test.tsx` (nome+contagem por deck, deck em dia é no-op — FR-009, deck vazio distinto de em dia — FR-010, selecionar deck com pendências chama `onSelectDeck`) — DEVE falhar antes de T055
+- [x] T055 [US2] `src/features/deckList/DeckListItem.tsx` + `DeckListScreen.tsx` (depende de T054, T052, T053); tela agnóstica de rota, expõe `onSelectDeck(deckId)`
+- [x] T056 [US2] `StudyCardScreen.tsx`: troca `getFirstDeck()` por prop `deckId` obrigatória + `getDeckById`; adota `useAppDatabase`; adiciona prop `onFinishSession` e botão "Voltar aos decks" no estado de sessão concluída; `tests/integration/study-card-screen.test.tsx` atualizado (3 pontos de render + 1 teste novo para o botão)
+- [x] T057 [US2] Rotas: `app/index.tsx` vira a lista de decks (`router.push` para `/study/[deckId]`); novo `app/study/[deckId].tsx` lê `deckId` via `useLocalSearchParams` e chama `router.back()` em `onFinishSession`. Ambas ficam finas e sem teste unitário próprio — sem precedente de teste de `expo-router` neste repo (nenhum mock, nenhum uso de `useRouter`/`useLocalSearchParams` em teste antes desta etapa); não compensa criar essa infraestrutura para uma única chamada de navegação. Validado manualmente (T058)
+- [x] T058 [US2] Validado manualmente via `expo start --web` + Playwright: lista → deck com pendências (4 devidas) → sessão de estudo → avaliar tudo → "Sessão concluída" → "Voltar aos decks" → lista mostra o deck agora "Em dia" (prova que `listWithDueCounts` recalcula ao vivo). Bug encontrado e corrigido nesse processo: `router.back()` não remonta a rota anterior por padrão (o Stack do expo-router mantém a tela viva), então a lista ficava com a contagem desatualizada até um novo carregamento manual; corrigido com `useFocusEffect` em `app/index.tsx` remontando `DeckListScreen` via `key` sempre que a rota reganha foco — com uma guarda para não disparar na primeira montagem (evita abrir o banco duas vezes em sequência, o que chegou a produzir um erro real de "Access Handle" do SQLite via WASM/OPFS na web)
+
+**Checkpoint**: A lista de decks mostra contagens reais e recalculadas a
+cada leitura; um deck em dia não inicia uma sessão vazia; selecionar um
+deck com pendências escopa a sessão a ele; a UI inteira (exceto a cola
+fina de roteamento) tem cobertura de teste test-first.
 
 ---
 
