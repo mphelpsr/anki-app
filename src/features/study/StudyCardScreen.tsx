@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { Database } from '../../data/Database';
+import { openAppDatabase } from '../../data/db';
+import { getCardById, getDueCards, type CardRow } from '../../data/repositories/cardRepository';
+import { getCardsForMastery, getFirstDeck } from '../../data/repositories/deckRepository';
+import { recordReview } from '../../data/repositories/reviewRepository';
+import { seedIfEmpty, type SeedDeck } from '../../data/seedLoader';
+import sampleSeed from '../../content/seed/oxford-3000-a1-a2.sample.json';
 import {
   canGoNext,
   canGoPrevious,
@@ -8,9 +15,8 @@ import {
   goPrevious,
   type QueueState,
 } from '../../domain/mockQueue';
-import { dueTodayCount, levelProgress } from '../../domain/mastery';
+import { dueTodayCount, levelProgress, type CefrLevel, type MasteryCard } from '../../domain/mastery';
 import { scheduleNextReview, type Grade } from '../../domain/scheduler';
-import { CURRENT_LEVEL, studyQueue, type StudyCardMock } from '../../mocks/studyQueue';
 import { DueTodayBadge } from './DueTodayBadge';
 import { GradeButtons } from './GradeButtons';
 import { GradeFeedback } from './GradeFeedback';
@@ -26,6 +32,8 @@ const DEFAULT_FEEDBACK_DURATION_MS = 700;
 interface Props {
   /** Duração do popup pós-avaliação (FR-011); reduzível a 0 em testes. */
   feedbackDurationMs?: number;
+  /** Banco de dados a usar; por padrão abre o SQLite real. Injetável em testes. */
+  database?: Database;
 }
 
 interface PendingGrade {
@@ -36,23 +44,62 @@ interface PendingGrade {
 /**
  * Composição dos elementos em escopo de
  * specs/002-mvp1-card-screen/spec.md, com o Elemento 1 redefinido por
- * specs/003-cefr-progress-counter/spec.md e o pós-revelação (tradução +
+ * specs/003-cefr-progress-counter/spec.md, o pós-revelação (tradução +
  * avaliação real + feedback em popup) definido por
- * specs/004-recall-grading/spec.md.
+ * specs/004-recall-grading/spec.md, e a persistência real (SQLite,
+ * fila = cartas devidas de verdade) de 001-flashcard-study-loop.
  */
-export function StudyCardScreen({ feedbackDurationMs = DEFAULT_FEEDBACK_DURATION_MS }: Props) {
-  const [cards, setCards] = useState<StudyCardMock[]>(studyQueue);
-  const [queueState, setQueueState] = useState<QueueState>({
-    currentIndex: 0,
-    total: cards.length,
-  });
+export function StudyCardScreen({ feedbackDurationMs = DEFAULT_FEEDBACK_DURATION_MS, database }: Props) {
+  const [db, setDb] = useState<Database | null>(null);
+  const [deckId, setDeckId] = useState<string | null>(null);
+  const [deckLevel, setDeckLevel] = useState<CefrLevel>('A2');
+  const [loading, setLoading] = useState(true);
+  const [sessionQueue, setSessionQueue] = useState<CardRow[]>([]);
+  const [masteryCards, setMasteryCards] = useState<MasteryCard[]>([]);
+  const [queueState, setQueueState] = useState<QueueState>({ currentIndex: 0, total: 0 });
   const [revealed, setRevealed] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [pending, setPending] = useState<PendingGrade | null>(null);
 
-  const card = cards[queueState.currentIndex];
-  const progress = levelProgress(cards, CURRENT_LEVEL);
-  const dueToday = dueTodayCount(cards, CURRENT_LEVEL, Date.now());
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const activeDb = database ?? (await openAppDatabase());
+      await seedIfEmpty(activeDb, [sampleSeed as SeedDeck]);
+
+      const deck = await getFirstDeck(activeDb);
+      if (!deck) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      const [due, mastery] = await Promise.all([
+        getDueCards(activeDb, deck.id, Date.now()),
+        getCardsForMastery(activeDb, deck.id),
+      ]);
+
+      if (cancelled) return;
+      setDb(activeDb);
+      setDeckId(deck.id);
+      setDeckLevel(deck.sourceLevel);
+      setSessionQueue(due);
+      setMasteryCards(mastery);
+      setQueueState({ currentIndex: 0, total: due.length });
+      setLoading(false);
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const card = sessionQueue[queueState.currentIndex];
+  const progress = levelProgress(masteryCards, deckLevel);
+  const dueToday = dueTodayCount(masteryCards, deckLevel, Date.now());
+  const hasDueCards = sessionQueue.length > 0;
 
   function handleNext() {
     setQueueState((state) => goNext(state));
@@ -65,36 +112,54 @@ export function StudyCardScreen({ feedbackDurationMs = DEFAULT_FEEDBACK_DURATION
   }
 
   function handleGrade(grade: Grade) {
+    if (!db || !deckId || !card) return;
     const now = Date.now();
-    const currentIndex = queueState.currentIndex;
-    const result = scheduleNextReview(cards[currentIndex], grade, now);
+    const preview = scheduleNextReview(card, grade, now);
+    const cardId = card.id;
 
-    setPending({ grade, intervalMinutes: result.intervalMinutes });
+    setPending({ grade, intervalMinutes: preview.intervalMinutes });
 
     setTimeout(() => {
-      setCards((previous) => previous.map((c, i) => (i === currentIndex ? { ...c, ...result } : c)));
+      void (async () => {
+        await recordReview(db, cardId, grade, now);
+        const [refreshedMastery, refreshedCard] = await Promise.all([
+          getCardsForMastery(db, deckId),
+          getCardById(db, cardId),
+        ]);
+        setMasteryCards(refreshedMastery);
+        if (refreshedCard) {
+          setSessionQueue((previous) => previous.map((c) => (c.id === cardId ? refreshedCard : c)));
+        }
 
-      if (canGoNext(queueState)) {
-        setQueueState((state) => goNext(state));
-        setRevealed(false);
-      } else {
-        setSessionComplete(true);
-      }
-
-      setPending(null);
+        if (canGoNext(queueState)) {
+          setQueueState((state) => goNext(state));
+          setRevealed(false);
+        } else {
+          setSessionComplete(true);
+        }
+        setPending(null);
+      })();
     }, feedbackDurationMs);
   }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <LevelProgress percentage={progress} level={CURRENT_LEVEL} />
+        <LevelProgress percentage={progress} level={deckLevel} />
         <DueTodayBadge count={dueToday} />
       </View>
       <View style={styles.card}>
-        {sessionComplete ? (
+        {loading ? (
+          <View style={styles.completeState} testID="study-loading">
+            <Text style={styles.completeText}>Carregando…</Text>
+          </View>
+        ) : sessionComplete ? (
           <View style={styles.completeState} testID="session-complete">
             <Text style={styles.completeText}>Sessão concluída!</Text>
+          </View>
+        ) : !hasDueCards ? (
+          <View style={styles.completeState} testID="no-cards-due">
+            <Text style={styles.completeText}>Tudo em dia por aqui!</Text>
           </View>
         ) : (
           <>

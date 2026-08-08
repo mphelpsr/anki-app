@@ -20,6 +20,16 @@ Sessão de estudo /P1, US2 = Lista de decks /P2, US3 = Correção do
 agendamento /P1) para permitir implementação e teste independentes de
 cada história, conforme spec.md.
 
+<!--
+Nota de status (2026-08-08): grande parte desta lista foi concluída de
+forma incremental pelas features 002/003/004 (tela de estudo mock →
+progresso gamificado → avaliação real com agendador de duas fases) antes
+de a persistência SQLite existir. Esta revisão marca o que já está feito,
+mantém as tarefas originais como registro histórico e adiciona a Fase 2b
+com as tarefas concretas da implementação do SQLite real. US2 (lista de
+decks) permanece não implementada — fora de escopo desta etapa.
+-->
+
 ## Formato: `[ID] [P?] [Story] Descrição`
 
 - **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependências)
@@ -35,234 +45,131 @@ Projeto do plan.md: `app/` (rotas), `src/` (domain/data/features/content),
 
 ## Fase 1: Setup (Infraestrutura Compartilhada)
 
-**Propósito**: Inicialização do projeto e estrutura básica
+- [x] T001 Inicializar o projeto Expo + TypeScript na raiz do repositório
+- [x] T002 [P] Instalar dependências principais (`expo-router`, `jest`, `@testing-library/react-native`, preset `jest-expo`)
+- [x] T003 [P] Configurar TypeScript strict + `tsc --noEmit` como gate
 
-- [ ] T001 Inicializar o projeto Expo + TypeScript na raiz do repositório (`package.json`, `tsconfig.json` em modo strict, `app.json`, `.gitignore` para `node_modules`/`.expo`)
-- [ ] T002 [P] Instalar dependências principais: `expo-router`, `expo-sqlite`, e dependências de desenvolvimento `jest`, `@testing-library/react-native`, `ts-jest`/`babel-jest` conforme o preset do Jest do Expo
-- [ ] T003 [P] Configurar ESLint + Prettier para TypeScript/React Native em `.eslintrc.js` / `.prettierrc`
-
-**Checkpoint**: `npx expo start` inicia um app vazio; `npm test` roda (ainda sem testes).
+**Checkpoint**: ✅ Atingido (via `002-mvp1-card-screen`).
 
 ---
 
-## Fase 2: Fundação (Pré-requisitos Bloqueantes)
+## Fase 2: Fundação — Agendador (Pré-requisito Bloqueante)
 
-**Propósito**: Infraestrutura central da qual toda história de usuário
-depende — agendador, persistência e conteúdo semente. Nenhum trabalho de
-história de usuário começa antes desta fase estar completa.
+- [x] T004 Testes de contrato do agendador em `tests/unit/scheduler.test.ts` (via `004-recall-grading`, modelo de duas fases)
+- [x] T005 `scheduleNextReview` em `src/domain/scheduler.ts`
+- [x] T006 Tipos `Grade`/`CardScheduleState`/`ScheduleResult` (inline em `scheduler.ts`, sem arquivo `.types.ts` separado — simplificação aceita)
+- [x] T012 Layout raiz do `expo-router` em `app/_layout.tsx`
 
-**⚠️ CRÍTICO**: Conforme o Princípio III da Constituição, T004 (testes)
-DEVE ser escrita e DEVE falhar antes de T005 (implementação).
+**Checkpoint**: ✅ Atingido. Agendador real, testado, em produção desde `004-recall-grading`.
 
-- [ ] T004 Escrever os testes de contrato do agendador em `tests/unit/scheduler.test.ts`, cobrindo cada regra de `contracts/scheduler-contract.md` (determinismo, encurtamento na nota 0, ordenação monotônica por nota, crescimento em sucessos consecutivos, piso do fator de facilidade, sem efeitos colaterais) — DEVE falhar (ainda sem implementação)
-- [ ] T005 Implementar `scheduleNextReview` em `src/domain/scheduler.ts` conforme `contracts/scheduler-contract.md` e a tabela de transições de estado do `data-model.md`, para fazer T004 passar (depende de T004)
-- [ ] T006 [P] Definir os tipos de domínio compartilhados (`Grade`, `CardScheduleState`, `ScheduleResult`) em `src/domain/scheduler.types.ts`
-- [ ] T007 [P] Escrever o schema SQLite (tabelas Deck, Card, Review conforme `data-model.md`) em `src/data/schema.sql`
-- [ ] T008 Implementar a conexão com o BD + o executor de migrações em `src/data/db.ts` (depende de T007)
-- [ ] T009 [P] Criar o dataset de amostra (~20 cards, formato conforme `contracts/seed-content-schema.json`) em `src/content/seed/oxford-3000-a1-a2.sample.json`
-- [ ] T010 [P] Criar `content-pipeline/SOURCES.md` registrando a fonte, data de extração e status de licença do dataset de amostra, conforme o Princípio IV da Constituição
-- [ ] T011 Implementar o carregador de semeadura da primeira execução em `src/data/seedLoader.ts` — lê os arquivos JSON semente, insere linhas Deck/Card apenas se o BD estiver vazio (depende de T008, T009)
-- [ ] T012 [P] Configurar o layout raiz do `expo-router` em `app/_layout.tsx`
+---
 
-**Checkpoint**: O agendador está implementado e testado de forma unitária
-e isolada; o schema do BD, a conexão e a semeadura de primeira execução
-funcionam de ponta a ponta (verificável abrindo o app em uma tela em
-branco com o BD populado). A implementação das histórias de usuário pode
-começar agora.
+## Fase 2b: Fundação — Persistência SQLite Real (NOVA nesta etapa)
+
+**Propósito**: Substituir o estado mock em memória (`src/mocks/
+studyQueue.ts`, usado por `002`/`003`/`004`) por SQLite real, sem mudar o
+comportamento já validado visualmente.
+
+**⚠️ CRÍTICO**: Testes de repositório usam SQL real via `node:sqlite`
+(ver research.md → Estratégia de testes), não mocks — devem falhar antes
+da implementação correspondente.
+
+- [ ] T036 [P] Criar a interface `Database` (`execAsync`/`runAsync`/`getAllAsync`/`getFirstAsync`) em `src/data/Database.ts`
+- [ ] T037 [P] Criar o adaptador de teste `tests/support/nodeSqliteDatabase.ts` (implementa `Database` via `node:sqlite`, banco `:memory:`)
+- [ ] T038 Escrever teste do schema em `tests/data/schema.test.ts` (tabelas/colunas esperadas existem após `execAsync(SCHEMA_SQL)`) — DEVE falhar antes de T039
+- [ ] T039 Criar `SCHEMA_SQL` (tabelas Deck/Card/Review conforme `data-model.md`) em `src/data/schema.ts` (depende de T038, T036)
+- [ ] T040 Implementar `openAppDatabase()` em `src/data/db.ts`, usando `expo-sqlite` real + `SCHEMA_SQL` (depende de T039)
+- [ ] T041 [P] Criar `content-pipeline/SOURCES.md` (fonte, data, nível, status de licença do dataset de amostra — Princípio IV)
+- [ ] T042 [P] Criar o dataset de amostra em `src/content/seed/oxford-3000-a1-a2.sample.json`, conforme `contracts/seed-content-schema.json` (mesmas 4 palavras já usadas no mock, agora rastreáveis)
+- [ ] T043 Escrever testes de `seedLoader` em `tests/data/seedLoader.test.ts` (semeia deck+cards em BD vazio; idempotente — rodar duas vezes não duplica) — DEVE falhar antes de T044
+- [ ] T044 Implementar `seedIfEmpty(db)` em `src/data/seedLoader.ts` (depende de T043, T040, T042)
+
+**Checkpoint**: BD abre, aplica schema e semeia dados reais uma única vez; comprovado por teste, não só manualmente.
 
 ---
 
 ## Fase 3: História de Usuário 1 - Estudar cards devidos em uma sessão (Prioridade: P1) 🎯 MVP
 
-**Objetivo**: O aprendiz estuda cards devidos um de cada vez (revelar →
-avaliar → próximo card) até a sessão ser concluída.
+- [x] T013 Teste de integração do fluxo revelar → avaliar → próximo card → sessão concluída, em `tests/integration/study-card-screen.test.tsx` (contra mock; ver T045 para a versão contra SQLite real)
+- [x] T018/T019 `SentenceReveal`/`GradeButtons` (nomes reais: `src/features/study/SentenceReveal.tsx`, `GradeButtons.tsx`)
+- [x] T020/T021 Tela de sessão em `app/index.tsx` (rota única — `app/study/[deckId].tsx` não existe; ver nota de US2) com estado de "sessão concluída"
 
-**Teste Independente**: Semear um deck com alguns cards devidos, percorrer
-a sessão completa avaliando todos os cards, e confirmar que ela termina
-em um estado claro de "concluída" sem nenhum card repetido ou pulado
-(spec História 1, quickstart.md §4).
+### Restante desta história para SQLite real
 
-### Testes para a História de Usuário 1
+- [x] T045 [US1] `tests/integration/study-card-screen.test.tsx` reescrito para injetar um `Database` de teste (`node:sqlite`, `tests/support/testDeckFixture.ts`, pré-semeado) via prop, em vez do array mock estático
+- [x] T046 [P] [US1] `cardRepository.getDueCards(db, deckId, now)` e `cardRepository.applyGrade(db, cardId, result, now)` implementados em `src/data/repositories/cardRepository.ts`
+- [x] T047 [US1] `reviewRepository.recordReview(db, cardId, grade, now)` implementado em `src/data/repositories/reviewRepository.ts` — busca a carta, calcula `scheduleNextReview`, atualiza o Card e insere a linha de Review. Desvio do plano original: sem `withTransactionAsync` explícito — a interface `Database` deliberadamente não expõe transações (simplificação YAGNI documentada em `research.md`); assinatura final recebe `cardId` (não o objeto `card` inteiro), buscando a carta atual internamente
+- [x] T048 [US1] `StudyCardScreen.tsx` reconectado: efeito inicial chama `openAppDatabase()` (ou `database` injetado) + `seedIfEmpty` + `getFirstDeck` + `getDueCards`/`getCardsForMastery`, com estado `loading` (`testID="study-loading"`) e estado vazio `no-cards-due`; `handleGrade` chama `reviewRepository.recordReview` dentro do `setTimeout` já existente e recarrega `masteryCards`/a carta avaliada do banco
+- [x] `src/mocks/studyQueue.ts` removido — não era mais importado por nenhum código de produção após T048
 
-- [ ] T013 [P] [US1] Escrever o teste de integração para o fluxo completo da sessão de estudo (iniciar → revelar → avaliar → próximo card → sessão concluída) em `tests/integration/study-session.test.ts`, contra um BD de teste semeado — DEVE falhar antes da implementação
-
-### Implementação para a História de Usuário 1
-
-- [ ] T014 [US1] Implementar a query de cards devidos (`getDueCards(deckId, now)`) e `applyGrade` do `CardRepository` em `src/data/repositories/cardRepository.ts` (depende de T005 agendador, T008 db)
-- [ ] T015 [US1] Implementar `ReviewRepository.recordReview` em `src/data/repositories/reviewRepository.ts` — chama o agendador, atualiza a linha do Card, anexa uma linha de Review em uma única transação (depende de T005, T014)
-- [ ] T016 [US1] Implementar a lógica de ordenação de sessão de cards devidos em `src/domain/deck.ts` (função pura: dado os cards devidos + ids já avaliados nesta sessão, retorna o próximo card ou null)
-- [ ] T017 [P] [US1] Construir o hook view-model da sessão de estudo `useStudySession` em `src/features/study/useStudySession.ts`, envolvendo T014-T016
-- [ ] T018 [P] [US1] Construir o componente de visualização de card (revelar frente/verso) em `src/features/study/CardView.tsx`
-- [ ] T019 [P] [US1] Construir o componente de botões de nota (4 notas) em `src/features/study/GradeButtons.tsx`
-- [ ] T020 [US1] Construir a tela de sessão de estudo `app/study/[deckId].tsx`, conectando `useStudySession` + `CardView` + `GradeButtons` (depende de T017, T018, T019)
-- [ ] T021 [US1] Implementar o estado de "sessão concluída" e o estado vazio de "deck sem nenhum card" em `app/study/[deckId].tsx`, conforme os Casos de Borda da spec
-
-**Checkpoint**: A História de Usuário 1 está totalmente funcional e
-testável/demonstrável de forma independente — `npm test -- study-session`
-passa e o app pode ser estudado de ponta a ponta a partir de um único
-deck.
+**Checkpoint**: A fila de estudo passa a ser as cartas **devidas de verdade** (filtradas por `nextDueAt`), não as 4 cartas mock fixas — e o progresso sobrevive a um reload da página (verificado manualmente em T050).
 
 ---
 
 ## Fase 4: História de Usuário 2 - Ver o que está devido antes de estudar (Prioridade: P2)
 
-**Objetivo**: O aprendiz vê o(s) deck(s) com contagens de devidos antes de
-escolher um para estudar.
-
-**Teste Independente**: Com um deck semeado de contagem de devidos
-conhecida, abrir a lista de decks e confirmar que a contagem exibida
-corresponde; selecionar o deck abre a sessão da História de Usuário 1 com
-escopo nele (spec História 2, quickstart.md §3).
-
-### Testes para a História de Usuário 2
-
-- [ ] T022 [P] [US2] Escrever o teste de integração para as contagens de devidos da lista de decks e os estados de deck vazio em `tests/integration/deck-list.test.ts` — DEVE falhar antes da implementação
-
-### Implementação para a História de Usuário 2
-
-- [ ] T023 [US2] Implementar `DeckRepository.listWithDueCounts` em `src/data/repositories/deckRepository.ts` (conforme data-model.md: a contagem de devidos é derivada, nunca armazenada)
-- [ ] T024 [P] [US2] Construir o hook view-model da lista de decks `useDeckList` em `src/features/deckList/useDeckList.ts`
-- [ ] T025 [P] [US2] Construir o componente `DeckListItem` (nome + contagem de devidos + estado em dia) em `src/features/deckList/DeckListItem.tsx`
-- [ ] T026 [US2] Construir a tela de lista de decks `app/index.tsx`, conectando `useDeckList` + `DeckListItem` e a navegação para `app/study/[deckId].tsx` (depende de T024, T025)
-- [ ] T027 [US2] Implementar a distinção entre "nenhum card" e "em dia" na tela de lista de decks, conforme FR-010 da spec
-
-**Checkpoint**: As Histórias de Usuário 1 E 2 funcionam de forma
-independente — um aprendiz pode abrir o app, ver as contagens de devidos
-e estudar a partir da lista de decks.
+**Status**: Não iniciada. `deckRepository.listWithDueCounts`, `useDeckList`,
+`DeckListItem` e a tela `app/index.tsx` como lista de decks (T023-T027
+originais) continuam como trabalho futuro — fora de escopo desta etapa,
+que troca a fonte de dados mas mantém a UI de deck único já existente.
 
 ---
 
 ## Fase 5: História de Usuário 3 - A nota de lembrança determina a próxima data de revisão (Prioridade: P1)
 
-**Objetivo**: Comprovar o comportamento de agendamento de ponta a ponta
-através da camada de persistência, não apenas na função pura — avaliar
-muda corretamente as datas de vencimento armazenadas e os intervalos
-crescem/encolhem conforme especificado.
+- [x] T028/T029 Cobertos por `tests/unit/scheduler.test.ts` (crescimento estrito, ordenação, Again curto) — a versão pura já prova SC-003/SC-004
+- [x] T049 [US3] Teste de integração que avalia uma carta ao longo de vários ciclos **contra o BD real** (`tests/data/reviewRepository.test.ts`, adaptador `node:sqlite`) verificando que `intervalMinutes` cresce estritamente e que `Review.intervalBefore`/`intervalAfter` ficam auditáveis
+- [x] T030 `intervalBefore`/`intervalAfter` já fazem parte do desenho do Review em `data-model.md` — persistidos por T047
 
-**Teste Independente**: Avaliar o mesmo card com nota baixa versus alta e
-comparar o `nextDueAt` armazenado; repetir notas "boas" em um card e
-confirmar que `intervalDays` cresce estritamente entre as revisões (spec
-História 3, quickstart.md §5, SC-003/SC-004).
-
-### Testes para a História de Usuário 3
-
-- [ ] T028 [P] [US3] Escrever testes unitários para os casos de borda da seleção de cards devidos (card novo imediatamente devido, card com dificuldade volta para a sessão) em `tests/unit/deck.test.ts` — DEVE falhar antes da implementação
-- [ ] T029 [P] [US3] Escrever um teste de integração que avalia um card ao longo de vários ciclos de revisão contra um BD SQLite real (arquivo temporário) e verifica que `Card.intervalDays` cresce estritamente ao longo de pelo menos 4 revisões "boas" consecutivas, e que uma nota baixa o reinicia, em `tests/integration/scheduling-growth.test.ts`
-
-### Implementação para a História de Usuário 3
-
-- [ ] T030 [US3] Garantir que `ReviewRepository.recordReview` (T015) persista `intervalBefore`/`intervalAfter` em cada linha de Review conforme `data-model.md`, para que o crescimento seja auditável a partir dos dados armazenados, não apenas recalculado
-- [ ] T031 [US3] Verificar e, se necessário, ajustar `CardRepository.applyGrade` (T014) para que o piso do fator de facilidade (1,30) e o reinício na nota 0 sejam aplicados também na borda do repositório, não apenas dentro do agendador puro (defesa contra futuros chamadores que contornem o agendador)
-
-**Checkpoint**: As três histórias de usuário estão funcionais de forma
-independente. A alegação central de benchmark contra o AnkiApp
-(comportamento de SRS correto) é verificada tanto no nível unitário (Fase
-2) quanto de ponta a ponta através de persistência real (esta fase).
+**Checkpoint**: Comportamento de agendamento correto, provado tanto na
+função pura (Fase 2) quanto de ponta a ponta contra SQLite real (T049).
 
 ---
 
 ## Fase 6: Polimento e Preocupações Transversais
 
-**Propósito**: Completar o que é necessário para rodar e validar a
-funcionalidade como um todo, conforme quickstart.md.
-
-- [ ] T032 [P] Escrever `content-pipeline/ingest-oxford.ts` (lê uma lista de palavras fonte, grava JSON semente conforme `contracts/seed-content-schema.json`) com um teste em `tests/content-pipeline/ingest-oxford.test.ts`
-- [ ] T033 [P] Configurar os scripts `npm run content:ingest` e `npm test` em `package.json`
-- [ ] T034 Rodar o `quickstart.md` de ponta a ponta manualmente (incluindo a verificação em modo avião/offline do §7) e corrigir qualquer lacuna encontrada
-- [ ] T035 [P] Escrever um `README.md` de alto nível resumindo o app, o fluxo de trabalho spec-kit usado e como rodar o `quickstart.md`
+- [x] T035 `README.md` de alto nível já existe
+- [ ] T032 `content-pipeline/ingest-oxford.ts` real (lê fonte → gera seed JSON) — adiado: o dataset de amostra (T042) continua escrito à mão até a fonte/licença Oxford ser definida
+- [ ] T033 [P] Script `npm run content:ingest` — adiado junto com T032
+- [x] T050 Rodado manualmente com o BD real via `expo start --web` + Playwright: carregamento inicial semeia o banco (4 cartas devidas), avaliar 2 cartas reduz "2 hoje", e um reload completo da página **preserva** a carta atual e a contagem de devidas — prova de persistência real, não estado de componente. Lacuna encontrada e corrigida: faltava `metro.config.js` registrando `.wasm` como asset e os cabeçalhos COOP/COEP exigidos pelo worker WASM do `expo-sqlite` na web; sem isso a tela ficava presa em "Carregando…" indefinidamente. Modo avião não testado nesta etapa (fora do alcance do Playwright/web; comportamento offline já é garantido pela ausência de qualquer chamada de rede no caminho de dados, só SQLite local).
 
 ---
 
-## Dependências e Ordem de Execução
+## Dependências e Ordem de Execução (Fase 2b + retomada de US1/US3)
 
-### Dependências entre Fases
-
-- **Setup (Fase 1)**: Sem dependências — começar imediatamente.
-- **Fundação (Fase 2)**: Depende do Setup. BLOQUEIA todas as histórias de
-  usuário — em particular, o agendador (T004-T005) precisa estar testado
-  e implementado antes de qualquer lógica de avaliação (US1, US3).
-- **Histórias de Usuário (Fase 3-5)**: Todas dependem da conclusão da
-  Fundação.
-  - US1 (P1) e US2 (P2) são independentes entre si e podem prosseguir em
-    paralelo assim que a Fundação estiver pronta.
-  - US3 (P1) depende da camada de repositório da US1 (T014, T015) já
-    existir, já que ela verifica o comportamento de agendamento através
-    desses mesmos repositórios em vez de duplicá-los — então construa a
-    US1 antes da US3, mesmo que ambas sejam P1.
-- **Polimento (Fase 6)**: Depende da conclusão das três histórias de
-  usuário.
-
-### Dentro de Cada História de Usuário
-
-- Os testes são escritos primeiro e DEVEM falhar antes das tarefas de
-  implementação correspondentes (Princípio III da Constituição).
-- Repositórios antes de view-models; view-models antes de telas.
-- História concluída e seu checkpoint verificado antes de avançar para a
-  próxima.
+- T036 (interface) e T037 (adaptador de teste) não têm dependências — podem começar imediatamente e em paralelo.
+- T038 → T039 → T040 (schema testado → schema real → conexão real), em sequência.
+- T041/T042 (conteúdo) são paralelos entre si e independentes do schema.
+- T043 → T044 (seedLoader) depende de T040 e T042.
+- T045 (teste) → T046/T047 (repositórios) → T048 (wiring da tela), nessa ordem — T048 é o único ponto em que a UI muda de fato.
+- T049 pode ser escrito assim que T047 existir.
 
 ### Oportunidades de Paralelismo
 
-- T002, T003 (Setup) em paralelo.
-- T006, T007, T009, T010, T012 (Fundação, arquivos distintos) em paralelo
-  assim que T004/T005 estiverem prontas.
-- T017, T018, T019 (view-model/componentes da US1, arquivos distintos) em
-  paralelo.
-- T024, T025 (view-model/componente da US2, arquivos distintos) em
-  paralelo.
-- T028, T029 (testes da US3, arquivos distintos) em paralelo.
-- As fases de implementação de US1 e US2 podem rodar em paralelo entre
-  dois desenvolvedores assim que a Fundação estiver pronta; US3 deve vir
-  depois da US1.
+- T036, T037 em paralelo.
+- T041, T042 em paralelo.
+- T046 e a escrita de T047 podem ser desenvolvidas lado a lado, mas T047 só fica "verde" depois que T046 existir (reviewRepository chama cardRepository internamente).
 
 ---
 
-## Exemplo de Paralelismo: História de Usuário 1
+## Estratégia de Implementação (retomada)
 
-```bash
-# Depois que T014-T016 (repositórios/domínio) estiverem prontas, estas podem rodar juntas:
-Task: "Construir o hook useStudySession em src/features/study/useStudySession.ts"
-Task: "Construir o componente CardView em src/features/study/CardView.tsx"
-Task: "Construir o componente GradeButtons em src/features/study/GradeButtons.tsx"
-```
-
----
-
-## Estratégia de Implementação
-
-### MVP Primeiro (Apenas História de Usuário 1)
-
-1. Completar a Fase 1: Setup.
-2. Completar a Fase 2: Fundação (agendador + BD + semente — CRÍTICO).
-3. Completar a Fase 3: História de Usuário 1.
-4. **PARE e VALIDE**: rode `tests/integration/study-session.test.ts` e o
-   quickstart.md §4 manualmente.
-5. Isso sozinho já é um MVP demonstrável: um deck, loop de estudo
-   completo, agendamento real por baixo dos panos.
-
-### Entrega Incremental
-
-1. Setup + Fundação → fundação pronta.
-2. Adicionar US1 → validar de forma independente → MVP demonstrável.
-3. Adicionar US2 → validar de forma independente → lista de decks sobre o
-   mesmo loop.
-4. Adicionar US3 → validar de forma independente → correção do
-   agendamento comprovada de ponta a ponta, não apenas na função pura.
-5. Polimento → pipeline de conteúdo, documentação, passagem completa do
-   quickstart.
+1. Fase 2b completa (schema + db + seed, todos testados) antes de tocar em `StudyCardScreen.tsx`.
+2. T045 (teste da tela contra BD real) escrito e falhando antes de T048.
+3. T048 é o único commit que efetivamente troca a fonte de dados da tela — mudança cirúrgica, não uma reescrita.
+4. **PARE e VALIDE**: `npm test`, `tsc --noEmit`, e manualmente via `expo start --web` — recarregar a página deve manter o progresso (prova de que é SQLite real, não estado de componente).
+5. Deck list (Fase 4) e pipeline de conteúdo real (T032/T033) ficam para uma próxima etapa.
 
 ---
 
 ## Notas
 
-- Tarefas [P] tocam arquivos diferentes e não têm dependências
-  pendentes.
-- O Princípio III da Constituição torna a nota "escrever o teste
-  primeiro" acima não opcional para T004, T013, T022, T028, T029, T032 —
-  tarefas de implementação que seguem uma tarefa de teste não devem
-  começar até que esse teste esteja escrito e falhando.
+- Tarefas [P] tocam arquivos diferentes e não têm dependências pendentes.
+- O Princípio III da Constituição torna "escrever o teste primeiro"
+  não-opcional para T038, T043, T045, T049 — a implementação
+  correspondente não começa até o teste existir e falhar.
 - Faça commit após cada tarefa ou grupo lógico, referenciando o ID da
   tarefa.
-- Evite scope creep: sem contas, sincronização, decks personalizados ou
-  sessões combinadas entre múltiplos decks — isso está explicitamente
-  fora de escopo conforme as Suposições do spec.md e o Princípio V da
-  Constituição.
+- Evite scope creep: sem contas, sincronização, decks personalizados,
+  sessões combinadas entre múltiplos decks, ou lista de decks (Fase 4) —
+  isso está explicitamente fora de escopo desta etapa.

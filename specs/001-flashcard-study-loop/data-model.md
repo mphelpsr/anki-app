@@ -1,5 +1,15 @@
 # Modelo de Dados da Fase 1: Loop de Estudo com Flashcards (MVP)
 
+<!--
+Nota de sincronização (implementação do SQLite real, 2026-08-08): o Card
+abaixo substitui os campos genéricos `front`/`back` da primeira versão
+pelos campos concretos que `002-mvp1-card-screen` e `004-recall-grading`
+já usam em produção (frase em inglês com posição da palavra-alvo,
+tradução em português com a mesma estrutura, emoji placeholder de
+imagem). Isso não muda nenhum FR desta spec, só alinha o modelo de dados
+ao que a UI já exige. Ver `src/data/schema.ts` para o SQL vigente.
+-->
+
 ## Deck
 
 Representa uma coleção nomeada de cards estudada como uma unidade (spec:
@@ -29,8 +39,10 @@ Um item de estudo único pertencente a um Deck (spec: Entidades Principais
 |---|---|---|
 | `id` | text (uuid) | Chave primária |
 | `deckId` | text | Chave estrangeira → Deck.id |
-| `front` | text | A palavra (pergunta) |
-| `back` | text | Definição/exemplo/tradução (resposta) |
+| `word` | text | A palavra-alvo em inglês |
+| `sentenceBefore` / `sentenceAfter` | text | Frase de exemplo em inglês, partida em torno de `word` (permite destacá-la sem reprocessar texto livre — ver `002-mvp1-card-screen`) |
+| `translationBefore` / `translatedWord` / `translationAfter` | text | Mesma estrutura, em português, exibida ao tocar "Reveal" (`004-recall-grading`) |
+| `emoji` | text | Placeholder de imagem (ver Suposições de `002-mvp1-card-screen/spec.md` — fonte real de ilustrações ainda não definida) |
 | `sourceRef` | text | Rastreabilidade até a entrada no dataset semente (Princípio IV da Constituição) |
 | `repetitions` | integer | 0 = carta nova/em relearning; >=1 = graduada. Estado do agendador de duas fases |
 | `easeFactor` | real | Fator de facilidade; começa em 2,5, piso 1,30 |
@@ -38,9 +50,11 @@ Um item de estudo único pertencente a um Deck (spec: Entidades Principais
 | `nextDueAt` | integer (unix ms) | Quando o card se torna devido; cards novos têm padrão "agora", ficando imediatamente devidos (Caso de Borda da spec: primeiro lançamento) |
 | `lastReviewedAt` | integer (unix ms), anulável | Nulo até a primeira revisão |
 
-**Regras de validação**: `front`/`back` não vazios; `easeFactor >= 1,30`;
-`intervalMinutes >= 0`; um Card com `lastReviewedAt = null` DEVE ter
-`repetitions = 0` e `intervalMinutes = 0`.
+**Regras de validação**: `word`, `sentenceBefore`/`sentenceAfter`,
+`translationBefore`/`translatedWord`/`translationAfter` não vazios;
+`easeFactor >= 1,30`; `intervalMinutes >= 0`; um Card com
+`lastReviewedAt = null` DEVE ter `repetitions = 0` e
+`intervalMinutes = 0`.
 
 **Transições de estado** (conduzidas pelo agendador em
 `src/domain/scheduler.ts`, que recebe uma Nota e os campos de agendamento
@@ -89,6 +103,15 @@ independente do estado de agendamento (mutável) atual do Card.
 **Relacionamentos**: Deck 1—N Card; Card 1—N Review. Excluir um Deck está
 fora de escopo para esta funcionalidade (nenhum requisito de exclusão na
 spec).
+
+## Nota sobre o nível CEFR usado por `003-cefr-progress-counter`
+
+`003` modela cada carta mock com seu próprio `cefrLevel`. No schema real,
+o nível é uma propriedade do **Deck** (`sourceLevel`), não do Card — o
+repositório (`deckRepository`) é responsável por unir Card ↔ Deck e
+produzir a forma `MasteryCard` (com `cefrLevel` "achatado") que
+`src/domain/mastery.ts` já espera. A função de domínio não muda; só a
+origem do dado.
 
 ## Notas sobre rastreabilidade FR/SC
 

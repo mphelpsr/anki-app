@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Deck Semente (saída do content-pipeline)",
-  "description": "Contrato entre content-pipeline/ingest-oxford.ts e a etapa de semeadura da primeira execução do app. Um arquivo por deck em src/content/seed/.",
+  "description": "Contrato entre content-pipeline/ingest-oxford.ts e src/data/seedLoader.ts. Um arquivo por deck em src/content/seed/. Campos de card alinhados ao schema real (ver data-model.md e src/data/schema.ts) desde a implementação do SQLite em 001-flashcard-study-loop.",
   "type": "object",
   "required": ["deckId", "name", "sourceLevel", "source", "extractedAt", "cards"],
   "properties": {
@@ -22,10 +22,24 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["front", "back", "sourceRef"],
+        "required": [
+          "word",
+          "sentenceBefore",
+          "sentenceAfter",
+          "translationBefore",
+          "translatedWord",
+          "translationAfter",
+          "emoji",
+          "sourceRef"
+        ],
         "properties": {
-          "front": { "type": "string", "minLength": 1, "description": "A palavra" },
-          "back": { "type": "string", "minLength": 1, "description": "Definição/exemplo/tradução" },
+          "word": { "type": "string", "minLength": 1, "description": "A palavra-alvo em inglês" },
+          "sentenceBefore": { "type": "string", "description": "Trecho da frase em inglês antes de 'word'" },
+          "sentenceAfter": { "type": "string", "description": "Trecho da frase em inglês depois de 'word'" },
+          "translationBefore": { "type": "string", "description": "Trecho da tradução em português antes de 'translatedWord'" },
+          "translatedWord": { "type": "string", "minLength": 1, "description": "Tradução de 'word' em português" },
+          "translationAfter": { "type": "string", "description": "Trecho da tradução em português depois de 'translatedWord'" },
+          "emoji": { "type": "string", "description": "Placeholder de imagem (ver Suposições de 002-mvp1-card-screen/spec.md)" },
           "sourceRef": { "type": "string", "description": "Ponteiro de volta para a entrada exata da fonte, para rastreabilidade" }
         }
       }

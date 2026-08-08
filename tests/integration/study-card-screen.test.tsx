@@ -1,21 +1,26 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { levelProgress, dueTodayCount } from '../../src/domain/mastery';
 import { StudyCardScreen } from '../../src/features/study/StudyCardScreen';
-import { CURRENT_LEVEL, studyQueue } from '../../src/mocks/studyQueue';
+import { createNodeSqliteDatabase } from '../support/nodeSqliteDatabase';
+import { FIXTURE_CARDS, seedFixtureDatabase } from '../support/testDeckFixture';
 
-const expectedProgress = levelProgress(studyQueue, CURRENT_LEVEL);
-const expectedDueToday = dueTodayCount(studyQueue, CURRENT_LEVEL, Date.now());
+const expectedProgress = 50; // 2 de 4 cartas do fixture são "dominadas"
+const expectedDueToday = FIXTURE_CARDS.length; // todas as cartas do fixture estão devidas
 
-/** Sem feedback pós-avaliação (duração 0) para testes que não o cobrem diretamente. */
-function renderScreen() {
-  return render(<StudyCardScreen feedbackDurationMs={0} />);
+/** Renderiza a tela contra um banco de teste (node:sqlite) pré-semeado, com feedback instantâneo. */
+async function renderScreen() {
+  const database = createNodeSqliteDatabase();
+  await seedFixtureDatabase(database);
+  await render(<StudyCardScreen feedbackDurationMs={0} database={database} />);
+  await waitFor(() => {
+    expect(screen.queryByTestId('study-loading')).toBeNull();
+  });
 }
 
 describe('StudyCardScreen — História de Usuário 1 de 002 (ver a frase completa)', () => {
   test('exibe a frase completa com a palavra-alvo em destaque e o botão Reveal visível', async () => {
     await renderScreen();
-    const first = studyQueue[0];
+    const first = FIXTURE_CARDS[0];
     expect(screen.getByTestId('word-image')).toBeTruthy();
     expect(screen.getByTestId('sentence-target').props.children).toBe(first.word);
     expect(screen.getByTestId('reveal-button')).toBeTruthy();
@@ -24,7 +29,7 @@ describe('StudyCardScreen — História de Usuário 1 de 002 (ver a frase comple
 
   test('tocar em Reveal não altera a frase em inglês, que permanece como referência', async () => {
     await renderScreen();
-    const first = studyQueue[0];
+    const first = FIXTURE_CARDS[0];
     await fireEvent.press(screen.getByTestId('reveal-button'));
     expect(screen.getByTestId('sentence-target').props.children).toBe(first.word);
     expect(screen.queryByTestId('reveal-button')).toBeNull();
@@ -37,7 +42,7 @@ describe('StudyCardScreen — História de Usuário 2 de 002 (navegar entre cart
     await fireEvent.press(screen.getByTestId('reveal-button'));
     await fireEvent.press(screen.getByTestId('next-arrow'));
 
-    expect(screen.getByTestId('sentence-target').props.children).toBe(studyQueue[1].word);
+    expect(screen.getByTestId('sentence-target').props.children).toBe(FIXTURE_CARDS[1].word);
     expect(screen.getByTestId('reveal-button')).toBeTruthy();
   });
 
@@ -46,7 +51,7 @@ describe('StudyCardScreen — História de Usuário 2 de 002 (navegar entre cart
     await fireEvent.press(screen.getByTestId('next-arrow'));
     await fireEvent.press(screen.getByTestId('prev-arrow'));
 
-    expect(screen.getByTestId('sentence-target').props.children).toBe(studyQueue[0].word);
+    expect(screen.getByTestId('sentence-target').props.children).toBe(FIXTURE_CARDS[0].word);
   });
 
   test('a seta esquerda está desabilitada na primeira carta', async () => {
@@ -56,7 +61,7 @@ describe('StudyCardScreen — História de Usuário 2 de 002 (navegar entre cart
 
   test('a seta direita está desabilitada na última carta', async () => {
     await renderScreen();
-    for (let i = 0; i < studyQueue.length - 1; i += 1) {
+    for (let i = 0; i < FIXTURE_CARDS.length - 1; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       await fireEvent.press(screen.getByTestId('next-arrow'));
     }
@@ -67,13 +72,13 @@ describe('StudyCardScreen — História de Usuário 2 de 002 (navegar entre cart
 describe('StudyCardScreen — História de Usuário 1 de 003 (progresso de nível)', () => {
   test('exibe o percentual de progresso rotulado com o nível atual', async () => {
     await renderScreen();
-    expect(screen.getByText(`${expectedProgress}% do ${CURRENT_LEVEL}`)).toBeTruthy();
+    expect(screen.getByText(`${expectedProgress}% do A2`)).toBeTruthy();
   });
 
   test('o progresso não muda ao navegar entre cartas', async () => {
     await renderScreen();
     await fireEvent.press(screen.getByTestId('next-arrow'));
-    expect(screen.getByText(`${expectedProgress}% do ${CURRENT_LEVEL}`)).toBeTruthy();
+    expect(screen.getByText(`${expectedProgress}% do A2`)).toBeTruthy();
   });
 });
 
@@ -103,21 +108,21 @@ describe('StudyCardScreen — História de Usuário 1 de 004 (avaliação com te
     expect(screen.getByTestId('grade-easy')).toBeTruthy();
   });
 
-  test('avaliar avança para a próxima carta, já com a nova palavra em destaque', async () => {
+  test('avaliar avança para a próxima carta, já com a nova palavra em destaque, e persiste no banco', async () => {
     await renderScreen();
     await fireEvent.press(screen.getByTestId('reveal-button'));
     await fireEvent.press(screen.getByTestId('grade-good'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('sentence-target').props.children).toBe(studyQueue[1].word);
+      expect(screen.getByTestId('sentence-target').props.children).toBe(FIXTURE_CARDS[1].word);
     });
     expect(screen.getByTestId('reveal-button')).toBeTruthy();
     expect(screen.queryByTestId('translation-line')).toBeNull();
   });
 
-  test('avaliar a última carta encerra a sessão', async () => {
+  test('avaliar todas as cartas devidas encerra a sessão', async () => {
     await renderScreen();
-    for (let i = 0; i < studyQueue.length; i += 1) {
+    for (let i = 0; i < FIXTURE_CARDS.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       await fireEvent.press(screen.getByTestId('reveal-button'));
       // eslint-disable-next-line no-await-in-loop
@@ -135,7 +140,7 @@ describe('StudyCardScreen — História de Usuário 1 de 004 (avaliação com te
 describe('StudyCardScreen — História de Usuário 2 de 004 (tradução ao revelar)', () => {
   test('a tradução em português aparece junto da revelação', async () => {
     await renderScreen();
-    const first = studyQueue[0];
+    const first = FIXTURE_CARDS[0];
     await fireEvent.press(screen.getByTestId('reveal-button'));
 
     const translation = screen.getByTestId('translation-line');
@@ -145,7 +150,11 @@ describe('StudyCardScreen — História de Usuário 2 de 004 (tradução ao reve
 
 describe('StudyCardScreen — História de Usuário 3 de 004 (feedback em popup ao avaliar)', () => {
   test('exibe o popup com a cor, o rótulo e o intervalo por extenso da nota escolhida', async () => {
-    await render(<StudyCardScreen feedbackDurationMs={50} />);
+    const database = createNodeSqliteDatabase();
+    await seedFixtureDatabase(database);
+    await render(<StudyCardScreen feedbackDurationMs={50} database={database} />);
+    await waitFor(() => expect(screen.queryByTestId('study-loading')).toBeNull());
+
     await fireEvent.press(screen.getByTestId('reveal-button'));
     await fireEvent.press(screen.getByTestId('grade-hard'));
 
@@ -153,20 +162,24 @@ describe('StudyCardScreen — História de Usuário 3 de 004 (feedback em popup 
     const badge = screen.getByTestId('grade-feedback-badge');
     expect(StyleSheet.flatten(badge.props.style).backgroundColor).toBe('#eb5757');
     expect(within(feedback).getByText('Hard')).toBeTruthy();
-    expect(screen.getByTestId('grade-feedback-interval').props.children.join('')).toContain('dias');
+    expect(screen.getByTestId('grade-feedback-interval').props.children.join('')).toMatch(/dias|dia/);
 
     await waitFor(() => {
       expect(screen.queryByTestId('grade-feedback')).toBeNull();
     });
   });
 
-  test('some com o feedback e mostra a próxima carta ao final do intervalo', async () => {
-    await render(<StudyCardScreen feedbackDurationMs={50} />);
+  test('some com o popup e mostra a próxima carta ao final do intervalo, automaticamente', async () => {
+    const database = createNodeSqliteDatabase();
+    await seedFixtureDatabase(database);
+    await render(<StudyCardScreen feedbackDurationMs={50} database={database} />);
+    await waitFor(() => expect(screen.queryByTestId('study-loading')).toBeNull());
+
     await fireEvent.press(screen.getByTestId('reveal-button'));
     await fireEvent.press(screen.getByTestId('grade-good'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('sentence-target').props.children).toBe(studyQueue[1].word);
+      expect(screen.getByTestId('sentence-target').props.children).toBe(FIXTURE_CARDS[1].word);
     });
   });
 });

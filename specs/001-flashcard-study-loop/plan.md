@@ -53,6 +53,16 @@ Nenhuma violação a justificar; o Rastreamento de Complexidade está vazio.
 
 ## Estrutura do Projeto
 
+<!--
+Nota de sincronização (implementação do SQLite real, 2026-08-08): a
+árvore abaixo é a intenção original deste plano. Na prática, o app foi
+construído incrementalmente por 002/003/004 antes da persistência real
+existir, então a estrutura efetiva diverge em alguns pontos — ver
+"Estrutura Real Atual" logo após a árvore original para o que
+efetivamente existe no repositório nesta etapa.
+-->
+
+
 ### Documentação (esta funcionalidade)
 
 ```text
@@ -108,6 +118,66 @@ tests/
 └── content-pipeline/
     └── ingest-oxford.test.ts   # Formato/versionamento da saída do pipeline
 ```
+
+### Estrutura Real Atual (após 002-004 + SQLite real)
+
+```text
+app/
+├── _layout.tsx
+└── index.tsx                   # Tela de estudo de UM deck (o único semeado) — lista de decks (US2) ainda não existe
+
+src/
+├── domain/
+│   ├── scheduler.ts             # Grade/CardScheduleState/ScheduleResult inline (sem arquivo .types.ts separado)
+│   ├── mastery.ts                # isMastered/levelProgress/dueTodayCount (003)
+│   ├── formatInterval.ts         # Rótulos curtos e por extenso dos intervalos (004)
+│   └── mockQueue.ts              # Navegação de fila mock (002) — permanece só para os testes/telas que ainda a usam
+├── data/                         # NOVO nesta etapa
+│   ├── Database.ts               # Interface estrutural (execAsync/runAsync/getAllAsync/getFirstAsync)
+│   ├── schema.ts                 # SCHEMA_SQL como string (não .sql — ver research.md)
+│   ├── db.ts                     # openAppDatabase(): abre via expo-sqlite real
+│   ├── seedLoader.ts              # Semeia Deck+Cards do JSON se o BD estiver vazio
+│   └── repositories/
+│       ├── deckRepository.ts
+│       ├── cardRepository.ts
+│       └── reviewRepository.ts
+├── content/
+│   └── seed/
+│       └── oxford-3000-a1-a2.sample.json
+└── features/
+    └── study/                    # RemainingCounter foi substituído por LevelProgress+DueTodayBadge (003);
+                                   # GradeButtons/GradeFeedback/TranslationLine adicionados por 004
+
+content-pipeline/
+└── SOURCES.md                    # Proveniência do dataset de amostra atual
+
+tests/
+├── unit/
+│   ├── scheduler.test.ts
+│   ├── mastery.test.ts
+│   ├── formatInterval.test.ts
+│   └── mockQueue.test.ts
+├── integration/
+│   └── study-card-screen.test.tsx    # Reescrito para semear um BD node:sqlite real via fixture, não mais o array mock
+├── data/                          # NOVO: repositórios contra SQLite real via node:sqlite
+│   ├── schema.test.ts
+│   ├── seedLoader.test.ts
+│   ├── cardRepository.test.ts
+│   ├── reviewRepository.test.ts
+│   └── deckRepository.test.ts
+└── support/
+    ├── nodeSqliteDatabase.ts      # Adaptador de teste (node:sqlite) para a interface Database
+    └── testDeckFixture.ts        # 4 cartas devidas com estados de progresso mistos, usadas pelo teste de integração
+
+metro.config.js                    # NOVO: registra `.wasm` como asset e cabeçalhos COOP/COEP —
+                                    # exigidos pelo worker WebAssembly (wa-sqlite) do expo-sqlite na web;
+                                    # sem isso a tela trava em "Carregando…" (ver quickstart/T050)
+```
+
+A lista de decks (US2, `app/index.tsx` mostrando múltiplos decks com
+contagem de devidos) permanece um gap conhecido — esta etapa foca em
+substituir o estado mock em memória por SQLite real para o único deck já
+existente, não em adicionar a navegação entre decks.
 
 **Decisão de Estrutura**: Um único projeto Expo na raiz do repositório
 (Tipo de Projeto: app mobile, sem backend). O agendador e a lógica de

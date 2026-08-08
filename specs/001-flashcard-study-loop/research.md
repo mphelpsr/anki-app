@@ -35,17 +35,26 @@ de "lembrei facilmente").
 
 ## Camada de persistência
 
-**Decisão**: `expo-sqlite` diretamente (sua API baseada em Promise /
-`useSQLiteContext`), com migrações SQL escritas à mão em
-`src/data/schema.sql`, sem ORM.
+**Decisão**: `expo-sqlite` diretamente (API `openDatabaseAsync` /
+`execAsync` / `runAsync` / `getAllAsync` / `getFirstAsync`), sem ORM. O
+schema SQL vive em `src/data/schema.ts` como uma constante de string
+(`SCHEMA_SQL`), não em um arquivo `.sql` separado — Metro não empacota
+texto `.sql` bruto sem um transformer customizado, e configurar um só
+para três `CREATE TABLE` não se justifica (Princípio V: YAGNI). Os
+repositórios (`src/data/repositories/`) dependem de uma interface mínima
+`Database` (`execAsync`/`runAsync`/`getAllAsync`/`getFirstAsync`) em vez
+de importar `expo-sqlite` diretamente — o objeto retornado por
+`openDatabaseAsync` já satisfaz essa interface estruturalmente, sem
+wrapper nenhum em produção.
 
 **Racional**: O esquema do MVP são três tabelas pequenas (Deck, Card,
 Review). Um ORM (Drizzle, WatermelonDB) adiciona uma dependência e um
 custo de curva de aprendizado que não se justifica nessa escala
 (Princípio V da Constituição: disciplina de MVP / YAGNI). O `expo-sqlite`
-é oficialmente suportado pelo Expo, funciona totalmente offline e é
-direto de testar apontando os repositórios para um arquivo de banco de
-dados em memória/temporário no Jest.
+é oficialmente suportado pelo Expo e funciona totalmente offline. Depender
+apenas da interface `Database` (não da classe concreta `SQLiteDatabase`)
+é o que viabiliza testar os repositórios com SQL real fora do Expo — ver
+Estratégia de testes abaixo.
 
 **Alternativas consideradas**: WatermelonDB (construído para
 sincronização — prematuro para um MVP sem backend); AsyncStorage/arquivo
@@ -95,13 +104,37 @@ build); digitar todos os cards manualmente direto no app (rejeitado — não
 ## Estratégia de testes
 
 **Decisão**: Jest como único test runner para tudo. `src/domain/`
-(agendador, seleção de cards devidos) é testado com Jest puro, sem
-dependências de RN — rápido e agnóstico de framework. Os repositórios em
-`src/data/` são testados contra um BD SQLite real (arquivo temporário) via
-a API do `expo-sqlite` testável em Node. As telas recebem um teste de
-smoke com `@testing-library/react-native` por história de usuário (iniciar
-sessão → avaliar um card → ver o próximo card; ver lista de decks → ver
-contagem de devidos).
+(agendador, seleção de cards devidos, mastery) é testado com Jest puro,
+sem dependências de RN — rápido e agnóstico de framework. Os repositórios
+em `src/data/` são testados contra SQLite **real** (não um mock) usando o
+módulo nativo `node:sqlite` do Node 22 (`tests/support/
+nodeSqliteDatabase.ts`, um adaptador que implementa a mesma interface
+`Database` que os repositórios consomem, com um banco `:memory:`). As
+telas recebem um teste de smoke com `@testing-library/react-native` por
+história de usuário, injetando esse mesmo adaptador como banco de dados
+de teste.
+
+**Racional (revisada ao implementar o SQLite real em 001)**: rodar
+`expo-sqlite` de verdade dentro do Jest não é viável de forma direta — sua
+implementação nativa depende de módulos nativos ausentes no Node puro, e
+sua implementação web (usada em `expo start --web`) depende de um runtime
+WASM que o preset `jest-expo` não carrega por padrão. Em vez de mockar as
+chamadas SQL (o que testaria a forma das chamadas, não se o SQL está
+correto), a camada de repositórios foi desenhada contra uma interface
+`Database` minúscula e estrutural; em produção, `expo-sqlite` a satisfaz
+sem nenhum adaptador, e em teste, `node:sqlite` (mecanismo SQLite real,
+diferente binding) a satisfaz via um adaptador de ~15 linhas. Isso mantém
+o Princípio III (testes primeiro para o modelo de dados de deck/card)
+verificando comportamento SQL genuíno — JOINs, filtros por `nextDueAt`,
+etc. — não apenas chamadas de função dubladas.
+
+**Alternativas consideradas**: mock manual do módulo `expo-sqlite`
+(rejeitado — testaria que as funções certas foram chamadas, não que as
+queries produzem os resultados certos); WatermelonDB/Drizzle com adaptador
+de teste embutido (rejeitado junto com a decisão de não usar ORM, ver
+Camada de persistência); rodar os testes de repositório apenas
+manualmente via `expo start --web` (rejeitado — viola o Princípio III,
+que exige testes automatizados para o modelo de dados de deck/card).
 
 **Racional**: Atende ao Princípio III da Constituição (testes primeiro
 para lógica de domínio, ao menos um teste de integração por fluxo voltado
