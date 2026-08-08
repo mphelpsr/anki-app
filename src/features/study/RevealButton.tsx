@@ -1,4 +1,8 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { GlossyLayer } from '../../ui/GlossyLayer';
+import { glossyShadowStyle } from '../../ui/glossyShadow';
+
+const ACCENT_COLOR = '#f6d998';
 
 interface Props {
   revealed: boolean;
@@ -19,24 +23,29 @@ export function RevealButton({ revealed, onReveal }: Props) {
   }
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Reveal"
-      onPress={onReveal}
-      style={styles.button}
-      testID="reveal-button"
-    >
-      <Text style={styles.label}>Reveal</Text>
-    </Pressable>
+    <View style={[styles.shadowWrapper, glossyShadowStyle(ACCENT_COLOR)]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Reveal"
+        onPress={onReveal}
+        style={styles.button}
+        testID="reveal-button"
+      >
+        <GlossyLayer color={ACCENT_COLOR} />
+        <Text style={styles.label}>Reveal</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#f6d998',
+  shadowWrapper: {
+    width: '100%',
     borderRadius: 32,
-    borderWidth: 1.5,
-    borderColor: '#2c2c2c',
+  },
+  button: {
+    borderRadius: 32,
+    overflow: 'hidden',
     paddingVertical: 16,
     width: '100%',
     alignItems: 'center',

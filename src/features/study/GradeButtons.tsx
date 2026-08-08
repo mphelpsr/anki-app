@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatInterval } from '../../domain/formatInterval';
 import { scheduleNextReview, type CardScheduleState, type Grade } from '../../domain/scheduler';
+import { GlossyLayer } from '../../ui/GlossyLayer';
+import { glossyShadowStyle } from '../../ui/glossyShadow';
 import { GRADE_COLORS, GRADE_LABELS, GRADES } from './gradeStyle';
 
 interface Props {
@@ -24,15 +26,18 @@ export function GradeButtons({ cardState, now, onGrade }: Props) {
         return (
           <View key={grade} style={styles.column}>
             <Text style={styles.time}>{formatInterval(preview.intervalMinutes)}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={label}
-              onPress={() => onGrade(grade)}
-              style={[styles.button, { backgroundColor: GRADE_COLORS[grade] }]}
-              testID={`grade-${label.toLowerCase()}`}
-            >
-              <Text style={styles.label}>{label}</Text>
-            </Pressable>
+            <View style={[styles.shadowWrapper, glossyShadowStyle(GRADE_COLORS[grade])]}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={label}
+                onPress={() => onGrade(grade)}
+                style={styles.button}
+                testID={`grade-${label.toLowerCase()}`}
+              >
+                <GlossyLayer color={GRADE_COLORS[grade]} />
+                <Text style={styles.label}>{label}</Text>
+              </Pressable>
+            </View>
           </View>
         );
       })}
@@ -55,11 +60,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#5a5a5a',
   },
+  shadowWrapper: {
+    width: '100%',
+    borderRadius: 14,
+  },
   button: {
     width: '100%',
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#2c2c2c',
+    overflow: 'hidden',
     paddingVertical: 12,
     alignItems: 'center',
   },

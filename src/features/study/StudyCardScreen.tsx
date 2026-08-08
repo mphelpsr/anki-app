@@ -15,6 +15,8 @@ import {
 } from '../../domain/mockQueue';
 import { dueTodayCount, levelProgress, type CefrLevel, type MasteryCard } from '../../domain/mastery';
 import { scheduleNextReview, type Grade } from '../../domain/scheduler';
+import { GlossyLayer } from '../../ui/GlossyLayer';
+import { glossyShadowStyle } from '../../ui/glossyShadow';
 import { DueTodayBadge } from './DueTodayBadge';
 import { GradeButtons } from './GradeButtons';
 import { GradeFeedback } from './GradeFeedback';
@@ -26,6 +28,7 @@ import { TranslationLine } from './TranslationLine';
 import { WordImage } from './WordImage';
 
 const DEFAULT_FEEDBACK_DURATION_MS = 700;
+const ACCENT_COLOR = '#f6d998';
 
 interface Props {
   /** Deck ao qual esta sessão de estudo é escopada (spec: 001, US2). */
@@ -154,14 +157,17 @@ export function StudyCardScreen({ deckId, onFinishSession, feedbackDurationMs = 
         ) : sessionComplete ? (
           <View style={styles.completeState} testID="session-complete">
             <Text style={styles.completeText}>Sessão concluída!</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onFinishSession}
-              style={styles.backButton}
-              testID="back-to-decks-button"
-            >
-              <Text style={styles.backButtonLabel}>Voltar aos decks</Text>
-            </Pressable>
+            <View style={[styles.backButtonShadow, glossyShadowStyle(ACCENT_COLOR)]}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onFinishSession}
+                style={styles.backButton}
+                testID="back-to-decks-button"
+              >
+                <GlossyLayer color={ACCENT_COLOR} />
+                <Text style={styles.backButtonLabel}>Voltar aos decks</Text>
+              </Pressable>
+            </View>
           </View>
         ) : !hasDueCards ? (
           <View style={styles.completeState} testID="no-cards-due">
@@ -247,11 +253,12 @@ const styles = StyleSheet.create({
     color: '#2c2c2c',
     marginBottom: 24,
   },
-  backButton: {
-    backgroundColor: '#f6d998',
+  backButtonShadow: {
     borderRadius: 32,
-    borderWidth: 1.5,
-    borderColor: '#2c2c2c',
+  },
+  backButton: {
+    borderRadius: 32,
+    overflow: 'hidden',
     paddingVertical: 16,
     paddingHorizontal: 32,
     alignItems: 'center',

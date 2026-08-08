@@ -1,4 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { GlossyLayer } from '../../ui/GlossyLayer';
+import { glossyShadowStyle } from '../../ui/glossyShadow';
+
+const ACCENT_COLOR = '#f6d998';
 
 interface Props {
   canGoPrevious: boolean;
@@ -10,42 +14,47 @@ interface Props {
 /** Elemento 5: setas de navegação anterior/próxima (FR-006 a FR-009). */
 export function NavArrows({ canGoPrevious, canGoNext, onPrevious, onNext }: Props) {
   return (
-    <View style={styles.row}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Carta anterior"
-        accessibilityState={{ disabled: !canGoPrevious }}
-        disabled={!canGoPrevious}
-        onPress={onPrevious}
-        style={[styles.arrow, !canGoPrevious && styles.disabled]}
-        testID="prev-arrow"
-      >
-        <Text style={styles.arrowText}>‹</Text>
-      </Pressable>
-      <View style={styles.divider} />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Próxima carta"
-        accessibilityState={{ disabled: !canGoNext }}
-        disabled={!canGoNext}
-        onPress={onNext}
-        style={[styles.arrow, !canGoNext && styles.disabled]}
-        testID="next-arrow"
-      >
-        <Text style={styles.arrowText}>›</Text>
-      </Pressable>
+    <View style={[styles.shadowWrapper, glossyShadowStyle(ACCENT_COLOR)]}>
+      <View style={styles.row}>
+        <GlossyLayer color={ACCENT_COLOR} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Carta anterior"
+          accessibilityState={{ disabled: !canGoPrevious }}
+          disabled={!canGoPrevious}
+          onPress={onPrevious}
+          style={[styles.arrow, !canGoPrevious && styles.disabled]}
+          testID="prev-arrow"
+        >
+          <Text style={styles.arrowText}>‹</Text>
+        </Pressable>
+        <View style={styles.divider} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Próxima carta"
+          accessibilityState={{ disabled: !canGoNext }}
+          disabled={!canGoNext}
+          onPress={onNext}
+          style={[styles.arrow, !canGoNext && styles.disabled]}
+          testID="next-arrow"
+        >
+          <Text style={styles.arrowText}>›</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  shadowWrapper: {
+    alignSelf: 'center',
+    borderRadius: 32,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f6d998',
     borderRadius: 32,
-    borderWidth: 1.5,
-    borderColor: '#2c2c2c',
+    overflow: 'hidden',
     alignSelf: 'center',
   },
   arrow: {
