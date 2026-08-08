@@ -125,8 +125,8 @@ Cenário: Tradução aparece junto da revelação
 Ao tocar em um dos quatro botões de avaliação, o aprendiz vê brevemente um
 popup centralizado sobre um fundo escurecido — com um selo na cor da nota
 escolhida, o nome da nota e a quantidade de tempo até a próxima revisão
-por extenso (ex.: "Próxima revisão em 36 dias") — por exatamente 1
-segundo. Ao final desse segundo, o popup desaparece e a tela avança
+por extenso (ex.: "Próxima revisão em 36 dias") — por exatamente 700
+milissegundos. Ao final desse intervalo, o popup desaparece e a tela avança
 automaticamente para a próxima carta. Cada nota tem uma cor fixa: Again em
 amarelo, Hard em vermelho, Good em laranja, Easy em verde. Essa mesma cor
 também é usada no próprio botão.
@@ -138,7 +138,7 @@ risco de toques errados passarem despercebidos.
 
 **Teste Independente**: Tocar em "Good", confirmar que aparece um popup
 laranja com o texto "Good" e a quantidade de dias até a próxima revisão,
-que ele permanece por 1 segundo, some, e a tela mostra a próxima carta
+que ele permanece por 700ms, some, e a tela mostra a próxima carta
 automaticamente, sem toque adicional do aprendiz.
 
 **Cenários de Aceitação** (BDD):
@@ -150,9 +150,9 @@ Cenário: Popup de feedback ao tocar em uma nota
   Então o sistema deve exibir um popup centralizado, sobre um fundo escurecido, na cor vermelha
   E esse popup deve mostrar o texto "Hard" e a quantidade de tempo até a próxima revisão por extenso
 
-Cenário: Popup some sozinho após 1 segundo e a sessão avança automaticamente
+Cenário: Popup some sozinho após 700ms e a sessão avança automaticamente
   Dado que o popup de feedback está visível
-  Quando se passa 1 segundo
+  Quando se passam 700 milissegundos
   Então o popup deve deixar de ser exibido
   E a tela deve avançar automaticamente para a próxima carta (ou "sessão concluída", se for a última), sem exigir nenhum toque do aprendiz
 
@@ -224,14 +224,14 @@ Cenário: Cada nota tem sua própria cor, no botão e no popup
 - **FR-011** (Evento): QUANDO o aprendiz tocar em um dos quatro botões de
   avaliação, o sistema DEVE exibir um popup centralizado, sobre um fundo
   escurecido, com o nome da nota e a quantidade de tempo até a próxima
-  revisão por extenso, por exatamente 1 segundo.
+  revisão por extenso, por exatamente 700 milissegundos.
 - **FR-012** (Onipresente): O sistema DEVE usar uma cor fixa e distinta
   por nota, aplicada tanto ao botão quanto ao selo do popup: Again =
   amarelo, Hard = vermelho, Good = laranja, Easy = verde.
-- **FR-013** (Evento): QUANDO o intervalo de 1 segundo do popup terminar,
-  o sistema DEVE, automaticamente e sem exigir nenhum toque do aprendiz,
-  ocultar o popup e aplicar o avanço para a próxima carta ou o estado de
-  "sessão concluída".
+- **FR-013** (Evento): QUANDO o intervalo de 700 milissegundos do popup
+  terminar, o sistema DEVE, automaticamente e sem exigir nenhum toque do
+  aprendiz, ocultar o popup e aplicar o avanço para a próxima carta ou o
+  estado de "sessão concluída".
 
 ### Fora de Escopo Explícito
 
@@ -290,11 +290,11 @@ de pendências continuam em português).
   visual já estabelecida no app; a cor de fundo de cada botão, porém,
   passa a ser específica da nota (FR-012), não mais o dourado uniforme —
   revisão feita para dar suporte ao feedback pós-toque da História 3.
-- A duração do popup (FR-011/FR-013) é fixada em 1 segundo por decisão
-  explícita do produto — diferente da primeira versão desta feature, que
-  tratava o valor como ajustável e não normativo. O parâmetro que controla
-  a duração na implementação permanece configurável apenas para testes
-  automatizados (reduzido a 0), não para uso em produção.
+- A duração do popup (FR-011/FR-013) é fixada em 700 milissegundos por
+  decisão explícita do produto (valor original da História 3, restaurado
+  após uma tentativa intermediária de 1 segundo). O parâmetro que
+  controla a duração na implementação permanece configurável apenas para
+  testes automatizados (reduzido a 0), não para uso em produção.
 - O intervalo por extenso mostrado no popup (ex.: "36 dias") usa a mesma
   fonte de verdade (`src/domain/scheduler.ts`) que os rótulos curtos dos
   botões (`<1m`, `36d`), apenas formatado de forma mais legível — não é

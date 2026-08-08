@@ -21,7 +21,7 @@ import { SentenceReveal } from './SentenceReveal';
 import { TranslationLine } from './TranslationLine';
 import { WordImage } from './WordImage';
 
-const DEFAULT_FEEDBACK_DURATION_MS = 1000;
+const DEFAULT_FEEDBACK_DURATION_MS = 700;
 
 interface Props {
   /** Duração do popup pós-avaliação (FR-011); reduzível a 0 em testes. */
