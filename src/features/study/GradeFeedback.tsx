@@ -1,37 +1,79 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { formatIntervalLong } from '../../domain/formatInterval';
 import type { Grade } from '../../domain/scheduler';
 import { GRADE_COLORS, GRADE_LABELS } from './gradeStyle';
 
 interface Props {
   grade: Grade;
+  intervalMinutes: number;
 }
 
 /**
- * Estado de carregamento breve exibido ao tocar em uma nota, antes de
- * avançar para a próxima carta (História de Usuário 3, FR-011/FR-012 de
- * specs/004-recall-grading/spec.md).
+ * Popup breve exibido ao tocar em uma nota, sobre um fundo escurecido,
+ * com a cor e o rótulo da nota e a próxima revisão por extenso — antes
+ * de avançar para a próxima carta (História de Usuário 3, FR-011/FR-012
+ * de specs/004-recall-grading/spec.md).
  */
-export function GradeFeedback({ grade }: Props) {
+export function GradeFeedback({ grade, intervalMinutes }: Props) {
+  const color = GRADE_COLORS[grade];
+
   return (
-    <View style={[styles.overlay, { backgroundColor: GRADE_COLORS[grade] }]} testID="grade-feedback">
-      <ActivityIndicator color="#2c2c2c" />
-      <Text style={styles.label}>{GRADE_LABELS[grade]}</Text>
+    <View style={styles.backdrop} testID="grade-feedback">
+      <View style={styles.card}>
+        <View style={[styles.badge, { backgroundColor: color }]} testID="grade-feedback-badge">
+          <Text style={styles.badgeIcon}>✓</Text>
+        </View>
+        <Text style={styles.title}>{GRADE_LABELS[grade]}</Text>
+        <Text style={styles.subtitle} testID="grade-feedback-interval">
+          Próxima revisão em {formatIntervalLong(intervalMinutes)}
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    width: '100%',
-    borderRadius: 16,
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(44, 44, 44, 0.45)',
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
   },
-  label: {
-    fontSize: 22,
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    gap: 8,
+    minWidth: 220,
+  },
+  badge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  badgeIcon: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  title: {
+    fontSize: 20,
     fontWeight: '700',
     color: '#2c2c2c',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6a6a6a',
+    textAlign: 'center',
   },
 });

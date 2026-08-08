@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { levelProgress, dueTodayCount } from '../../src/domain/mastery';
 import { StudyCardScreen } from '../../src/features/study/StudyCardScreen';
@@ -143,16 +143,17 @@ describe('StudyCardScreen — História de Usuário 2 de 004 (tradução ao reve
   });
 });
 
-describe('StudyCardScreen — História de Usuário 3 de 004 (feedback colorido ao avaliar)', () => {
-  test('exibe o estado de carregamento com a cor e o rótulo da nota escolhida', async () => {
+describe('StudyCardScreen — História de Usuário 3 de 004 (feedback em popup ao avaliar)', () => {
+  test('exibe o popup com a cor, o rótulo e o intervalo por extenso da nota escolhida', async () => {
     await render(<StudyCardScreen feedbackDurationMs={50} />);
     await fireEvent.press(screen.getByTestId('reveal-button'));
     await fireEvent.press(screen.getByTestId('grade-hard'));
 
     const feedback = screen.getByTestId('grade-feedback');
-    expect(feedback).toBeTruthy();
-    expect(StyleSheet.flatten(feedback.props.style).backgroundColor).toBe('#eb5757');
-    expect(screen.getByText('Hard')).toBeTruthy();
+    const badge = screen.getByTestId('grade-feedback-badge');
+    expect(StyleSheet.flatten(badge.props.style).backgroundColor).toBe('#eb5757');
+    expect(within(feedback).getByText('Hard')).toBeTruthy();
+    expect(screen.getByTestId('grade-feedback-interval').props.children.join('')).toContain('dias');
 
     await waitFor(() => {
       expect(screen.queryByTestId('grade-feedback')).toBeNull();

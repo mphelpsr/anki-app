@@ -15,3 +15,24 @@ export function formatInterval(minutes: number): string {
   }
   return `${Math.round(minutes / DAY_MINUTES)}d`;
 }
+
+/**
+ * Formata um intervalo em minutos por extenso, em português, para o
+ * feedback pós-avaliação (ex.: "10 minutos", "78 dias").
+ */
+export function formatIntervalLong(minutes: number): string {
+  if (minutes < HOUR_MINUTES) {
+    const value = Math.ceil(minutes);
+    return `${value} ${pluralize(value, 'minuto', 'minutos')}`;
+  }
+  if (minutes < DAY_MINUTES) {
+    const value = Math.ceil(minutes / HOUR_MINUTES);
+    return `${value} ${pluralize(value, 'hora', 'horas')}`;
+  }
+  const value = Math.round(minutes / DAY_MINUTES);
+  return `${value} ${pluralize(value, 'dia', 'dias')}`;
+}
+
+function pluralize(value: number, singular: string, plural: string): string {
+  return value === 1 ? singular : plural;
+}
