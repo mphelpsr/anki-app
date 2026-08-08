@@ -8,6 +8,16 @@
 
 **Entrada**: Descrição do usuário: "After revealing the sentence, show the four Anki-style recall grade buttons (Again/Hard/Good/Easy), each with a dynamically computed time-until-next-review label driven by a real spaced-repetition scheduler; also show the Portuguese translation once revealed; rename the reveal button to English 'Reveal'"
 
+<!--
+Nota de revisão (2026-08-04): adiciona a História de Usuário 3 e
+FR-011/FR-012 — feedback breve colorido por nota ao tocar em um botão de
+avaliação, antes de avançar para a próxima carta, com uma cor fixa por
+nota (Again=amarelo, Hard=vermelho, Good=laranja, Easy=verde). Isso
+substitui a Suposição original de que os botões seguiriam apenas a
+identidade visual dourada do app — agora cada botão de avaliação também
+usa sua cor própria.
+-->
+
 **Contexto e motivação**: em conversa, o usuário anexou uma referência
 visual (Again/Hard/Good/Easy, com um rótulo de tempo acima de cada botão,
 ex.: `<1m`, `<6m`, `<10m`, `5d`) e pediu que, ao revelar uma carta, esses
@@ -110,6 +120,43 @@ Cenário: Tradução aparece junto da revelação
 
 ---
 
+### História de Usuário 3 - Feedback visual breve ao avaliar (Prioridade: P2)
+
+Ao tocar em um dos quatro botões de avaliação, o aprendiz vê brevemente
+uma resposta visual — uma cor de fundo específica da nota escolhida, com
+um indicador de carregamento e o nome da nota — antes de a tela avançar
+para a próxima carta. Cada nota tem uma cor fixa: Again em amarelo, Hard
+em vermelho, Good em laranja, Easy em verde. Essa mesma cor também é usada
+no próprio botão.
+
+**Por que essa prioridade**: Não é necessária para o loop funcionar (a
+avaliação já reagenda e avança sem isso), mas dá uma confirmação visual
+imediata de qual nota foi escolhida, reduzindo o risco de toques errados
+passarem despercebidos.
+
+**Teste Independente**: Tocar em "Good", confirmar que aparece um estado
+de carregamento laranja com o texto "Good" por um breve instante, e que
+em seguida a tela mostra a próxima carta.
+
+**Cenários de Aceitação** (BDD):
+
+```gherkin
+Cenário: Feedback colorido ao tocar em uma nota
+  Dado que o aprendiz está vendo os quatro botões de avaliação
+  Quando o aprendiz toca em "Hard"
+  Então o sistema deve exibir brevemente um estado de carregamento na cor vermelha com o texto "Hard"
+  E, ao final desse breve intervalo, a tela deve avançar para a próxima carta (ou "sessão concluída", se for a última)
+
+Cenário: Cada nota tem sua própria cor, no botão e no feedback
+  Dado que o aprendiz está vendo os quatro botões de avaliação
+  Então o botão "Again" e seu feedback devem usar amarelo
+  E o botão "Hard" e seu feedback devem usar vermelho
+  E o botão "Good" e seu feedback devem usar laranja
+  E o botão "Easy" e seu feedback devem usar verde
+```
+
+---
+
 ### Casos de Borda
 
 - Uma carta já graduada (com intervalo em dias) recebe "Again": o
@@ -165,6 +212,13 @@ Cenário: Tradução aparece junto da revelação
 - **FR-010** (Onipresente): O sistema DEVE rotular o botão de revelar
   como "Reveal" (em inglês), consistente com os rótulos em inglês dos
   quatro botões de avaliação.
+- **FR-011** (Evento): QUANDO o aprendiz tocar em um dos quatro botões de
+  avaliação, o sistema DEVE exibir um estado de carregamento breve (cor
+  de fundo + indicador de progresso + nome da nota) antes de aplicar o
+  avanço para a próxima carta ou o estado de "sessão concluída".
+- **FR-012** (Onipresente): O sistema DEVE usar uma cor fixa e distinta
+  por nota, aplicada tanto ao botão quanto ao seu estado de carregamento:
+  Again = amarelo, Hard = vermelho, Good = laranja, Easy = verde.
 
 ### Fora de Escopo Explícito
 
@@ -219,7 +273,11 @@ de pendências continuam em português).
 - A tradução em português usa a mesma estrutura de "antes/palavra/depois"
   já usada para a frase em inglês, para permitir destacar a palavra
   traduzida sem reprocessar texto livre.
-- Cores/estilo dos botões de avaliação seguem a identidade visual já
-  estabelecida no app (dourado/contorno escuro), não as cores azuis da
-  imagem de referência, que serviu para mostrar a estrutura (4 botões +
-  rótulo de tempo), não a paleta.
+- Estilo dos botões de avaliação (bordas, tipografia) segue a identidade
+  visual já estabelecida no app; a cor de fundo de cada botão, porém,
+  passa a ser específica da nota (FR-012), não mais o dourado uniforme —
+  revisão feita para dar suporte ao feedback pós-toque da História 3.
+- A duração do estado de carregamento (FR-011) é um valor de produto
+  ajustável (breve o suficiente para não atrapalhar o ritmo de estudo,
+  longo o suficiente para ser percebido); o valor exato não é normativo
+  aqui, só o fato de existir e usar a cor certa.

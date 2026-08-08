@@ -13,6 +13,7 @@ import { scheduleNextReview, type Grade } from '../../domain/scheduler';
 import { CURRENT_LEVEL, studyQueue, type StudyCardMock } from '../../mocks/studyQueue';
 import { DueTodayBadge } from './DueTodayBadge';
 import { GradeButtons } from './GradeButtons';
+import { GradeFeedback } from './GradeFeedback';
 import { LevelProgress } from './LevelProgress';
 import { NavArrows } from './NavArrows';
 import { RevealButton } from './RevealButton';
@@ -20,13 +21,21 @@ import { SentenceReveal } from './SentenceReveal';
 import { TranslationLine } from './TranslationLine';
 import { WordImage } from './WordImage';
 
+const DEFAULT_FEEDBACK_DURATION_MS = 700;
+
+interface Props {
+  /** Duração do feedback pós-avaliação (FR-011); reduzível a 0 em testes. */
+  feedbackDurationMs?: number;
+}
+
 /**
  * Composição dos elementos em escopo de
  * specs/002-mvp1-card-screen/spec.md, com o Elemento 1 redefinido por
  * specs/003-cefr-progress-counter/spec.md e o pós-revelação (tradução +
- * avaliação real) definido por specs/004-recall-grading/spec.md.
+ * avaliação real + feedback colorido) definido por
+ * specs/004-recall-grading/spec.md.
  */
-export function StudyCardScreen() {
+export function StudyCardScreen({ feedbackDurationMs = DEFAULT_FEEDBACK_DURATION_MS }: Props) {
   const [cards, setCards] = useState<StudyCardMock[]>(studyQueue);
   const [queueState, setQueueState] = useState<QueueState>({
     currentIndex: 0,
@@ -34,6 +43,7 @@ export function StudyCardScreen() {
   });
   const [revealed, setRevealed] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [pendingGrade, setPendingGrade] = useState<Grade | null>(null);
 
   const card = cards[queueState.currentIndex];
   const progress = levelProgress(cards, CURRENT_LEVEL);
@@ -50,18 +60,24 @@ export function StudyCardScreen() {
   }
 
   function handleGrade(grade: Grade) {
-    const now = Date.now();
-    const currentIndex = queueState.currentIndex;
-    const result = scheduleNextReview(cards[currentIndex], grade, now);
+    setPendingGrade(grade);
 
-    setCards((previous) => previous.map((c, i) => (i === currentIndex ? { ...c, ...result } : c)));
+    setTimeout(() => {
+      const now = Date.now();
+      const currentIndex = queueState.currentIndex;
+      const result = scheduleNextReview(cards[currentIndex], grade, now);
 
-    if (canGoNext(queueState)) {
-      setQueueState((state) => goNext(state));
-      setRevealed(false);
-    } else {
-      setSessionComplete(true);
-    }
+      setCards((previous) => previous.map((c, i) => (i === currentIndex ? { ...c, ...result } : c)));
+
+      if (canGoNext(queueState)) {
+        setQueueState((state) => goNext(state));
+        setRevealed(false);
+      } else {
+        setSessionComplete(true);
+      }
+
+      setPendingGrade(null);
+    }, feedbackDurationMs);
   }
 
   return (
@@ -71,7 +87,9 @@ export function StudyCardScreen() {
         <DueTodayBadge count={dueToday} />
       </View>
       <View style={styles.card}>
-        {sessionComplete ? (
+        {pendingGrade !== null ? (
+          <GradeFeedback grade={pendingGrade} />
+        ) : sessionComplete ? (
           <View style={styles.completeState} testID="session-complete">
             <Text style={styles.completeText}>Sessão concluída!</Text>
           </View>

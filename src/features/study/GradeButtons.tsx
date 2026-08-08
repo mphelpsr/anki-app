@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatInterval } from '../../domain/formatInterval';
 import { scheduleNextReview, type CardScheduleState, type Grade } from '../../domain/scheduler';
+import { GRADE_COLORS, GRADE_LABELS, GRADES } from './gradeStyle';
 
 interface Props {
   cardState: CardScheduleState;
@@ -8,23 +9,18 @@ interface Props {
   onGrade: (grade: Grade) => void;
 }
 
-const GRADES: { grade: Grade; label: string }[] = [
-  { grade: 0, label: 'Again' },
-  { grade: 1, label: 'Hard' },
-  { grade: 2, label: 'Good' },
-  { grade: 3, label: 'Easy' },
-];
-
 /**
  * Elemento pós-revelação: 4 botões de avaliação com rótulo de tempo
  * calculado dinamicamente a partir do estado atual da carta (FR-001 a
- * FR-004 de specs/004-recall-grading/spec.md). Substitui o RevealButton.
+ * FR-004 de specs/004-recall-grading/spec.md) e cor fixa por nota
+ * (FR-012). Substitui o RevealButton.
  */
 export function GradeButtons({ cardState, now, onGrade }: Props) {
   return (
     <View style={styles.row} testID="grade-buttons">
-      {GRADES.map(({ grade, label }) => {
+      {GRADES.map((grade) => {
         const preview = scheduleNextReview(cardState, grade, now);
+        const label = GRADE_LABELS[grade];
         return (
           <View key={grade} style={styles.column}>
             <Text style={styles.time}>{formatInterval(preview.intervalMinutes)}</Text>
@@ -32,7 +28,7 @@ export function GradeButtons({ cardState, now, onGrade }: Props) {
               accessibilityRole="button"
               accessibilityLabel={label}
               onPress={() => onGrade(grade)}
-              style={styles.button}
+              style={[styles.button, { backgroundColor: GRADE_COLORS[grade] }]}
               testID={`grade-${label.toLowerCase()}`}
             >
               <Text style={styles.label}>{label}</Text>
@@ -61,7 +57,6 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    backgroundColor: '#f6d998',
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#2c2c2c',
