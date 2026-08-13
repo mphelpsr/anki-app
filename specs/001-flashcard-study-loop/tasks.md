@@ -74,15 +74,15 @@ comportamento já validado visualmente.
 (ver research.md → Estratégia de testes), não mocks — devem falhar antes
 da implementação correspondente.
 
-- [ ] T036 [P] Criar a interface `Database` (`execAsync`/`runAsync`/`getAllAsync`/`getFirstAsync`) em `src/data/Database.ts`
-- [ ] T037 [P] Criar o adaptador de teste `tests/support/nodeSqliteDatabase.ts` (implementa `Database` via `node:sqlite`, banco `:memory:`)
-- [ ] T038 Escrever teste do schema em `tests/data/schema.test.ts` (tabelas/colunas esperadas existem após `execAsync(SCHEMA_SQL)`) — DEVE falhar antes de T039
-- [ ] T039 Criar `SCHEMA_SQL` (tabelas Deck/Card/Review conforme `data-model.md`) em `src/data/schema.ts` (depende de T038, T036)
-- [ ] T040 Implementar `openAppDatabase()` em `src/data/db.ts`, usando `expo-sqlite` real + `SCHEMA_SQL` (depende de T039)
-- [ ] T041 [P] Criar `content-pipeline/SOURCES.md` (fonte, data, nível, status de licença do dataset de amostra — Princípio IV)
-- [ ] T042 [P] Criar o dataset de amostra em `src/content/seed/oxford-3000-a1-a2.sample.json`, conforme `contracts/seed-content-schema.json` (mesmas 4 palavras já usadas no mock, agora rastreáveis)
-- [ ] T043 Escrever testes de `seedLoader` em `tests/data/seedLoader.test.ts` (semeia deck+cards em BD vazio; idempotente — rodar duas vezes não duplica) — DEVE falhar antes de T044
-- [ ] T044 Implementar `seedIfEmpty(db)` em `src/data/seedLoader.ts` (depende de T043, T040, T042)
+- [x] T036 [P] Criar a interface `Database` (`execAsync`/`runAsync`/`getAllAsync`/`getFirstAsync`) em `src/data/Database.ts`
+- [x] T037 [P] Criar o adaptador de teste `tests/support/nodeSqliteDatabase.ts` (implementa `Database` via `node:sqlite`, banco `:memory:`)
+- [x] T038 Escrever teste do schema em `tests/data/schema.test.ts` (tabelas/colunas esperadas existem após `execAsync(SCHEMA_SQL)`) — DEVE falhar antes de T039
+- [x] T039 Criar `SCHEMA_SQL` (tabelas Deck/Card/Review conforme `data-model.md`) em `src/data/schema.ts` (depende de T038, T036)
+- [x] T040 Implementar `openAppDatabase()` em `src/data/db.ts`, usando `expo-sqlite` real + `SCHEMA_SQL` (depende de T039)
+- [x] T041 [P] Criar `content-pipeline/SOURCES.md` (fonte, data, nível, status de licença do dataset de amostra — Princípio IV)
+- [x] T042 [P] Criar o dataset de amostra em `src/content/seed/oxford-3000-a1-a2.sample.json`, conforme `contracts/seed-content-schema.json` (mesmas 4 palavras já usadas no mock, agora rastreáveis)
+- [x] T043 Escrever testes de `seedLoader` em `tests/data/seedLoader.test.ts` (semeia deck+cards em BD vazio; idempotente — rodar duas vezes não duplica) — DEVE falhar antes de T044
+- [x] T044 Implementar `seedIfEmpty(db)` em `src/data/seedLoader.ts` (depende de T043, T040, T042)
 
 **Checkpoint**: BD abre, aplica schema e semeia dados reais uma única vez; comprovado por teste, não só manualmente.
 
