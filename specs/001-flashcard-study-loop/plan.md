@@ -146,8 +146,7 @@ src/
 │       └── reviewRepository.ts
 ├── content/
 │   └── seed/                      # Conteúdo autoral definitivo (não mais placeholder — ver SOURCES.md)
-│       ├── core-vocabulary-a1.json  # 20 cartas
-│       ├── core-vocabulary-a2.json  # 20 cartas (4 originais + 16 novas)
+│       ├── core-vocabulary-a2.json  # 20 cartas (4 originais + 16 novas) — nível inicial (A1 removido a pedido)
 │       └── core-vocabulary-b1.json  # 20 cartas
 └── features/
     ├── deckList/                 # NOVO (US2): DeckListItem.tsx + DeckListScreen.tsx

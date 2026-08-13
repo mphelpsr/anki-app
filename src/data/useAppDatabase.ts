@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import coreVocabularyA1 from '../content/seed/core-vocabulary-a1.json';
 import coreVocabularyA2 from '../content/seed/core-vocabulary-a2.json';
 import coreVocabularyB1 from '../content/seed/core-vocabulary-b1.json';
 import type { Database } from './Database';
 import { openAppDatabase } from './db';
 import { seedIfEmpty, type SeedDeck } from './seedLoader';
 
-const SEED_DECKS = [coreVocabularyA1, coreVocabularyA2, coreVocabularyB1] as SeedDeck[];
+// A1 deliberadamente fora do conteúdo semeado — vocabulário considerado
+// básico demais pelo aprendiz, que já parte de A2 (ver SOURCES.md).
+const SEED_DECKS = [coreVocabularyA2, coreVocabularyB1] as SeedDeck[];
 
 interface UseAppDatabaseResult {
   db: Database | null;

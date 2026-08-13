@@ -1,7 +1,7 @@
 import { SCHEMA_SQL } from '../../src/data/schema';
 import { seedIfEmpty } from '../../src/data/seedLoader';
 import { createNodeSqliteDatabase } from '../support/nodeSqliteDatabase';
-import sampleSeed from '../../src/content/seed/core-vocabulary-a1.json';
+import sampleSeed from '../../src/content/seed/core-vocabulary-a2.json';
 
 async function createSeededTestDb() {
   const db = createNodeSqliteDatabase();
