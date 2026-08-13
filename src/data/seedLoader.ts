@@ -35,14 +35,18 @@ export async function seedIfEmpty(db: Database, decks: SeedDeck[]): Promise<void
 
   const now = Date.now();
 
-  for (const deck of decks) {
+  for (const [index, deck] of decks.entries()) {
     const deckId = generateId('deck');
+    // Cada deck recebe um created_at estritamente maior que o anterior —
+    // um valor repetido faria ORDER BY created_at empatar e a ordem de
+    // exibição virar arbitrária (não a ordem em que os decks foram dados).
+    const deckCreatedAt = now + index;
 
     await db.runAsync('INSERT INTO Deck (id, name, source_level, created_at) VALUES ($id, $name, $sourceLevel, $now)', {
       $id: deckId,
       $name: deck.name,
       $sourceLevel: deck.sourceLevel,
-      $now: now,
+      $now: deckCreatedAt,
     });
 
     for (const card of deck.cards) {

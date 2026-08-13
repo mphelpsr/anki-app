@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Deck Semente (saída do content-pipeline)",
-  "description": "Contrato entre content-pipeline/ingest-oxford.ts e src/data/seedLoader.ts. Um arquivo por deck em src/content/seed/. Campos de card alinhados ao schema real (ver data-model.md e src/data/schema.ts) desde a implementação do SQLite em 001-flashcard-study-loop.",
+  "description": "Contrato de qualquer dataset semente em src/content/seed/ (hoje, conteúdo autoral — ver content-pipeline/SOURCES.md) e src/data/seedLoader.ts. Um arquivo por deck. Campos de card alinhados ao schema real (ver data-model.md e src/data/schema.ts) desde a implementação do SQLite em 001-flashcard-study-loop.",
   "type": "object",
   "required": ["deckId", "name", "sourceLevel", "source", "extractedAt", "cards"],
   "properties": {
-    "deckId": { "type": "string", "description": "Id estável, ex.: 'oxford-3000-a1-a2'" },
+    "deckId": { "type": "string", "description": "Id estável, ex.: 'core-vocabulary-a1'" },
     "name": { "type": "string", "description": "Nome do deck legível por humanos" },
     "sourceLevel": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1"] },
     "source": {

@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import sampleSeed from '../content/seed/oxford-3000-a1-a2.sample.json';
+import coreVocabularyA1 from '../content/seed/core-vocabulary-a1.json';
+import coreVocabularyA2 from '../content/seed/core-vocabulary-a2.json';
+import coreVocabularyB1 from '../content/seed/core-vocabulary-b1.json';
 import type { Database } from './Database';
 import { openAppDatabase } from './db';
 import { seedIfEmpty, type SeedDeck } from './seedLoader';
+
+const SEED_DECKS = [coreVocabularyA1, coreVocabularyA2, coreVocabularyB1] as SeedDeck[];
 
 interface UseAppDatabaseResult {
   db: Database | null;
@@ -23,7 +27,7 @@ export function useAppDatabase(database?: Database): UseAppDatabaseResult {
 
     async function load() {
       const activeDb = database ?? (await openAppDatabase());
-      await seedIfEmpty(activeDb, [sampleSeed as SeedDeck]);
+      await seedIfEmpty(activeDb, SEED_DECKS);
       if (cancelled) return;
       setDb(activeDb);
       setLoading(false);

@@ -1,0 +1,209 @@
+{
+  "deckId": "core-vocabulary-a2",
+  "name": "Vocabulário Essencial — A2",
+  "sourceLevel": "A2",
+  "source": "content-pipeline/SOURCES.md#core-vocabulary-a2.json",
+  "extractedAt": "2026-08-08",
+  "cards": [
+    {
+      "word": "requests",
+      "sentenceBefore": "We listened to all the ",
+      "sentenceAfter": " from our guests.",
+      "translationBefore": "Ouvimos todos os ",
+      "translatedWord": "pedidos",
+      "translationAfter": " dos nossos hóspedes.",
+      "emoji": "🤝",
+      "sourceRef": "core-vocabulary-a2#request"
+    },
+    {
+      "word": "journey",
+      "sentenceBefore": "Our ",
+      "sentenceAfter": " across the mountains took three days.",
+      "translationBefore": "Nossa ",
+      "translatedWord": "jornada",
+      "translationAfter": " pelas montanhas durou três dias.",
+      "emoji": "🏔️",
+      "sourceRef": "core-vocabulary-a2#journey"
+    },
+    {
+      "word": "harvest",
+      "sentenceBefore": "The farmers celebrated a great ",
+      "sentenceAfter": " this year.",
+      "translationBefore": "Os fazendeiros celebraram uma ótima ",
+      "translatedWord": "colheita",
+      "translationAfter": " este ano.",
+      "emoji": "🌾",
+      "sourceRef": "core-vocabulary-a2#harvest"
+    },
+    {
+      "word": "lecture",
+      "sentenceBefore": "The professor gave a fascinating ",
+      "sentenceAfter": " on ancient history.",
+      "translationBefore": "O professor deu uma ",
+      "translatedWord": "palestra",
+      "translationAfter": " fascinante sobre história antiga.",
+      "emoji": "📚",
+      "sourceRef": "core-vocabulary-a2#lecture"
+    },
+    {
+      "word": "neighbor",
+      "sentenceBefore": "Our ",
+      "sentenceAfter": " helped us carry the boxes upstairs.",
+      "translationBefore": "Nosso ",
+      "translatedWord": "vizinho",
+      "translationAfter": " nos ajudou a carregar as caixas escada acima.",
+      "emoji": "🏘️",
+      "sourceRef": "core-vocabulary-a2#neighbor"
+    },
+    {
+      "word": "weather",
+      "sentenceBefore": "The ",
+      "sentenceAfter": " changed suddenly during our hike.",
+      "translationBefore": "O ",
+      "translatedWord": "clima",
+      "translationAfter": " mudou de repente durante a nossa caminhada.",
+      "emoji": "⛅",
+      "sourceRef": "core-vocabulary-a2#weather"
+    },
+    {
+      "word": "holiday",
+      "sentenceBefore": "We are planning a ",
+      "sentenceAfter": " to the mountains next summer.",
+      "translationBefore": "Estamos planejando ",
+      "translatedWord": "férias",
+      "translationAfter": " nas montanhas no próximo verão.",
+      "emoji": "🏖️",
+      "sourceRef": "core-vocabulary-a2#holiday"
+    },
+    {
+      "word": "hobby",
+      "sentenceBefore": "Painting became her favorite ",
+      "sentenceAfter": " during the winter.",
+      "translationBefore": "Pintar se tornou o ",
+      "translatedWord": "passatempo",
+      "translationAfter": " favorito dela durante o inverno.",
+      "emoji": "🎨",
+      "sourceRef": "core-vocabulary-a2#hobby"
+    },
+    {
+      "word": "traffic",
+      "sentenceBefore": "The ",
+      "sentenceAfter": " was terrible on the way to work this morning.",
+      "translationBefore": "O ",
+      "translatedWord": "trânsito",
+      "translationAfter": " estava terrível a caminho do trabalho hoje de manhã.",
+      "emoji": "🚦",
+      "sourceRef": "core-vocabulary-a2#traffic"
+    },
+    {
+      "word": "kitchen",
+      "sentenceBefore": "She was cooking dinner in the ",
+      "sentenceAfter": " when the phone rang.",
+      "translationBefore": "Ela estava cozinhando o jantar na ",
+      "translatedWord": "cozinha",
+      "translationAfter": " quando o telefone tocou.",
+      "emoji": "🥘",
+      "sourceRef": "core-vocabulary-a2#kitchen"
+    },
+    {
+      "word": "medicine",
+      "sentenceBefore": "The doctor gave her ",
+      "sentenceAfter": " for the headache.",
+      "translationBefore": "O médico deu a ela um ",
+      "translatedWord": "remédio",
+      "translationAfter": " para a dor de cabeça.",
+      "emoji": "💊",
+      "sourceRef": "core-vocabulary-a2#medicine"
+    },
+    {
+      "word": "airport",
+      "sentenceBefore": "We arrived at the ",
+      "sentenceAfter": " two hours before the flight.",
+      "translationBefore": "Chegamos ao ",
+      "translatedWord": "aeroporto",
+      "translationAfter": " duas horas antes do voo.",
+      "emoji": "✈️",
+      "sourceRef": "core-vocabulary-a2#airport"
+    },
+    {
+      "word": "restaurant",
+      "sentenceBefore": "They celebrated the anniversary at a fancy ",
+      "sentenceAfter": ".",
+      "translationBefore": "Eles comemoraram o aniversário em um ",
+      "translatedWord": "restaurante",
+      "translationAfter": " chique.",
+      "emoji": "🍴",
+      "sourceRef": "core-vocabulary-a2#restaurant"
+    },
+    {
+      "word": "weekend",
+      "sentenceBefore": "I usually visit my grandparents on the ",
+      "sentenceAfter": ".",
+      "translationBefore": "Eu costumo visitar meus avós no ",
+      "translatedWord": "fim de semana",
+      "translationAfter": ".",
+      "emoji": "🛋️",
+      "sourceRef": "core-vocabulary-a2#weekend"
+    },
+    {
+      "word": "exercise",
+      "sentenceBefore": "Doing regular ",
+      "sentenceAfter": " keeps your body healthy.",
+      "translationBefore": "Fazer ",
+      "translatedWord": "exercício",
+      "translationAfter": " regular mantém o seu corpo saudável.",
+      "emoji": "🏃",
+      "sourceRef": "core-vocabulary-a2#exercise"
+    },
+    {
+      "word": "bicycle",
+      "sentenceBefore": "He rides his ",
+      "sentenceAfter": " to school every day.",
+      "translationBefore": "Ele vai de ",
+      "translatedWord": "bicicleta",
+      "translationAfter": " para a escola todos os dias.",
+      "emoji": "🚲",
+      "sourceRef": "core-vocabulary-a2#bicycle"
+    },
+    {
+      "word": "umbrella",
+      "sentenceBefore": "Don't forget your ",
+      "sentenceAfter": ", it might rain later.",
+      "translationBefore": "Não esqueça o seu ",
+      "translatedWord": "guarda-chuva",
+      "translationAfter": ", pode chover mais tarde.",
+      "emoji": "☂️",
+      "sourceRef": "core-vocabulary-a2#umbrella"
+    },
+    {
+      "word": "dictionary",
+      "sentenceBefore": "She looked up the word in an English ",
+      "sentenceAfter": ".",
+      "translationBefore": "Ela procurou a palavra em um ",
+      "translatedWord": "dicionário",
+      "translationAfter": " de inglês.",
+      "emoji": "📕",
+      "sourceRef": "core-vocabulary-a2#dictionary"
+    },
+    {
+      "word": "appointment",
+      "sentenceBefore": "I have a dentist ",
+      "sentenceAfter": " on Thursday afternoon.",
+      "translationBefore": "Eu tenho uma ",
+      "translatedWord": "consulta",
+      "translationAfter": " no dentista na quinta à tarde.",
+      "emoji": "🗓️",
+      "sourceRef": "core-vocabulary-a2#appointment"
+    },
+    {
+      "word": "supermarket",
+      "sentenceBefore": "My mother buys vegetables at the ",
+      "sentenceAfter": " every week.",
+      "translationBefore": "Minha mãe compra verduras no ",
+      "translatedWord": "supermercado",
+      "translationAfter": " toda semana.",
+      "emoji": "🛒",
+      "sourceRef": "core-vocabulary-a2#supermarket"
+    }
+  ]
+}

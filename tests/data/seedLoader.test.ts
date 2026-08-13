@@ -1,7 +1,7 @@
 import { SCHEMA_SQL } from '../../src/data/schema';
 import { seedIfEmpty } from '../../src/data/seedLoader';
 import { createNodeSqliteDatabase } from '../support/nodeSqliteDatabase';
-import sampleSeed from '../../src/content/seed/oxford-3000-a1-a2.sample.json';
+import sampleSeed from '../../src/content/seed/core-vocabulary-a1.json';
 
 async function createSeededTestDb() {
   const db = createNodeSqliteDatabase();
@@ -61,5 +61,16 @@ describe('seedIfEmpty', () => {
     const cards = await db.getAllAsync('SELECT * FROM Card');
     expect(decks).toHaveLength(1);
     expect(cards).toHaveLength(sampleSeed.cards.length);
+  });
+
+  test('semeando múltiplos decks, a ordem de criação preserva a ordem do array (ORDER BY created_at)', async () => {
+    const db = await createSeededTestDb();
+    const second = { ...sampleSeed, name: 'Segundo deck' };
+
+    await seedIfEmpty(db, [sampleSeed, second]);
+
+    const decks = await db.getAllAsync<{ name: string; created_at: number }>('SELECT name, created_at FROM Deck ORDER BY created_at');
+    expect(decks.map((d) => d.name)).toEqual([sampleSeed.name, 'Segundo deck']);
+    expect(decks[1].created_at).toBeGreaterThan(decks[0].created_at);
   });
 });

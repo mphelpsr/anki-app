@@ -145,8 +145,10 @@ src/
 │       ├── cardRepository.ts
 │       └── reviewRepository.ts
 ├── content/
-│   └── seed/
-│       └── oxford-3000-a1-a2.sample.json
+│   └── seed/                      # Conteúdo autoral definitivo (não mais placeholder — ver SOURCES.md)
+│       ├── core-vocabulary-a1.json  # 20 cartas
+│       ├── core-vocabulary-a2.json  # 20 cartas (4 originais + 16 novas)
+│       └── core-vocabulary-b1.json  # 20 cartas
 └── features/
     ├── deckList/                 # NOVO (US2): DeckListItem.tsx + DeckListScreen.tsx
     └── study/                    # RemainingCounter foi substituído por LevelProgress+DueTodayBadge (003);

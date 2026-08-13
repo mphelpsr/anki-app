@@ -1,0 +1,209 @@
+{
+  "deckId": "core-vocabulary-b1",
+  "name": "Vocabulário Essencial — B1",
+  "sourceLevel": "B1",
+  "source": "content-pipeline/SOURCES.md#core-vocabulary-b1.json",
+  "extractedAt": "2026-08-08",
+  "cards": [
+    {
+      "word": "opportunity",
+      "sentenceBefore": "This job offers a great ",
+      "sentenceAfter": " to travel abroad.",
+      "translationBefore": "Este emprego oferece uma ótima ",
+      "translatedWord": "oportunidade",
+      "translationAfter": " de viajar para o exterior.",
+      "emoji": "🌟",
+      "sourceRef": "core-vocabulary-b1#opportunity"
+    },
+    {
+      "word": "environment",
+      "sentenceBefore": "We should protect the ",
+      "sentenceAfter": " for future generations.",
+      "translationBefore": "Devemos proteger o ",
+      "translatedWord": "meio ambiente",
+      "translationAfter": " para as futuras gerações.",
+      "emoji": "🌍",
+      "sourceRef": "core-vocabulary-b1#environment"
+    },
+    {
+      "word": "achievement",
+      "sentenceBefore": "Winning the award was a huge ",
+      "sentenceAfter": " for the team.",
+      "translationBefore": "Ganhar o prêmio foi uma grande ",
+      "translatedWord": "conquista",
+      "translationAfter": " para a equipe.",
+      "emoji": "🏆",
+      "sourceRef": "core-vocabulary-b1#achievement"
+    },
+    {
+      "word": "confidence",
+      "sentenceBefore": "Her ",
+      "sentenceAfter": " grew after she gave the presentation.",
+      "translationBefore": "A ",
+      "translatedWord": "confiança",
+      "translationAfter": " dela cresceu depois que ela fez a apresentação.",
+      "emoji": "💪",
+      "sourceRef": "core-vocabulary-b1#confidence"
+    },
+    {
+      "word": "experience",
+      "sentenceBefore": "Living abroad was a life-changing ",
+      "sentenceAfter": " for him.",
+      "translationBefore": "Morar no exterior foi uma ",
+      "translatedWord": "experiência",
+      "translationAfter": " transformadora para ele.",
+      "emoji": "🌏",
+      "sourceRef": "core-vocabulary-b1#experience"
+    },
+    {
+      "word": "behavior",
+      "sentenceBefore": "The teacher praised the students' good ",
+      "sentenceAfter": ".",
+      "translationBefore": "A professora elogiou o bom ",
+      "translatedWord": "comportamento",
+      "translationAfter": " dos alunos.",
+      "emoji": "🎭",
+      "sourceRef": "core-vocabulary-b1#behavior"
+    },
+    {
+      "word": "decision",
+      "sentenceBefore": "Choosing a career was a difficult ",
+      "sentenceAfter": " for her.",
+      "translationBefore": "Escolher uma carreira foi uma ",
+      "translatedWord": "decisão",
+      "translationAfter": " difícil para ela.",
+      "emoji": "🤔",
+      "sourceRef": "core-vocabulary-b1#decision"
+    },
+    {
+      "word": "relationship",
+      "sentenceBefore": "They built a strong ",
+      "sentenceAfter": " based on trust.",
+      "translationBefore": "Eles construíram um ",
+      "translatedWord": "relacionamento",
+      "translationAfter": " forte baseado em confiança.",
+      "emoji": "💞",
+      "sourceRef": "core-vocabulary-b1#relationship"
+    },
+    {
+      "word": "responsibility",
+      "sentenceBefore": "Taking care of the dog is now his ",
+      "sentenceAfter": ".",
+      "translationBefore": "Cuidar do cachorro agora é ",
+      "translatedWord": "responsabilidade",
+      "translationAfter": " dele.",
+      "emoji": "📋",
+      "sourceRef": "core-vocabulary-b1#responsibility"
+    },
+    {
+      "word": "atmosphere",
+      "sentenceBefore": "The restaurant had a cozy, relaxed ",
+      "sentenceAfter": ".",
+      "translationBefore": "O restaurante tinha uma ",
+      "translatedWord": "atmosfera",
+      "translationAfter": " aconchegante e relaxada.",
+      "emoji": "🕯️",
+      "sourceRef": "core-vocabulary-b1#atmosphere"
+    },
+    {
+      "word": "imagination",
+      "sentenceBefore": "Children use their ",
+      "sentenceAfter": " to create amazing stories.",
+      "translationBefore": "As crianças usam a ",
+      "translatedWord": "imaginação",
+      "translationAfter": " para criar histórias incríveis.",
+      "emoji": "💭",
+      "sourceRef": "core-vocabulary-b1#imagination"
+    },
+    {
+      "word": "generations",
+      "sentenceBefore": "This tradition has been passed down for many ",
+      "sentenceAfter": ".",
+      "translationBefore": "Essa tradição foi transmitida por muitas ",
+      "translatedWord": "gerações",
+      "translationAfter": ".",
+      "emoji": "👨‍👩‍👧‍👦",
+      "sourceRef": "core-vocabulary-b1#generation"
+    },
+    {
+      "word": "negotiate",
+      "sentenceBefore": "The two companies agreed to ",
+      "sentenceAfter": " a new contract.",
+      "translationBefore": "As duas empresas concordaram em ",
+      "translatedWord": "negociar",
+      "translationAfter": " um novo contrato.",
+      "emoji": "🤝",
+      "sourceRef": "core-vocabulary-b1#negotiate"
+    },
+    {
+      "word": "appreciate",
+      "sentenceBefore": "I really ",
+      "sentenceAfter": " your help with this project.",
+      "translationBefore": "Eu realmente ",
+      "translatedWord": "aprecio",
+      "translationAfter": " a sua ajuda com este projeto.",
+      "emoji": "🙏",
+      "sourceRef": "core-vocabulary-b1#appreciate"
+    },
+    {
+      "word": "anxious",
+      "sentenceBefore": "She felt ",
+      "sentenceAfter": " before her first job interview.",
+      "translationBefore": "Ela se sentiu ",
+      "translatedWord": "ansiosa",
+      "translationAfter": " antes da primeira entrevista de emprego.",
+      "emoji": "😰",
+      "sourceRef": "core-vocabulary-b1#anxious"
+    },
+    {
+      "word": "determined",
+      "sentenceBefore": "He was ",
+      "sentenceAfter": " to finish the marathon despite the pain.",
+      "translationBefore": "Ele estava ",
+      "translatedWord": "determinado",
+      "translationAfter": " a terminar a maratona apesar da dor.",
+      "emoji": "🏅",
+      "sourceRef": "core-vocabulary-b1#determined"
+    },
+    {
+      "word": "flexible",
+      "sentenceBefore": "My new job has ",
+      "sentenceAfter": " working hours.",
+      "translationBefore": "Meu novo emprego tem horários de trabalho ",
+      "translatedWord": "flexíveis",
+      "translationAfter": ".",
+      "emoji": "🕐",
+      "sourceRef": "core-vocabulary-b1#flexible"
+    },
+    {
+      "word": "reliable",
+      "sentenceBefore": "You can always count on a ",
+      "sentenceAfter": " friend.",
+      "translationBefore": "Você sempre pode contar com um amigo ",
+      "translatedWord": "confiável",
+      "translationAfter": ".",
+      "emoji": "✅",
+      "sourceRef": "core-vocabulary-b1#reliable"
+    },
+    {
+      "word": "essential",
+      "sentenceBefore": "Clean water is ",
+      "sentenceAfter": " for good health.",
+      "translationBefore": "Água limpa é ",
+      "translatedWord": "essencial",
+      "translationAfter": " para uma boa saúde.",
+      "emoji": "🩺",
+      "sourceRef": "core-vocabulary-b1#essential"
+    },
+    {
+      "word": "controversial",
+      "sentenceBefore": "The new law became a ",
+      "sentenceAfter": " topic in the news.",
+      "translationBefore": "A nova lei se tornou um assunto ",
+      "translatedWord": "controverso",
+      "translationAfter": " nos noticiários.",
+      "emoji": "📰",
+      "sourceRef": "core-vocabulary-b1#controversial"
+    }
+  ]
+}
